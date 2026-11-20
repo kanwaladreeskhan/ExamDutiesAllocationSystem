@@ -32,7 +32,8 @@ def allocate_duties(
 
     Each ``Duty`` represents one exam session in one room. Its required
     invigilator count is expanded into individual positions. Existing
-    assignments count toward conflicts, duty limits, and workload.
+    assignments count toward conflicts, duty limits, and workload. Positions
+    that are already filled by an existing assignment are not filled again.
     """
     staff_by_id = {staff.id: staff for staff in staff_members}
     if len(staff_by_id) != len(staff_members):
@@ -48,12 +49,21 @@ def allocate_duties(
     for assignment in existing_assignments:
         assignments_by_staff.setdefault(assignment.staff_id, []).append(assignment)
 
+    # Positions (duty, slot) that already have a staff member.
+    filled_positions = {
+        (assignment.duty.id, assignment.slot_number)
+        for assignment in existing_assignments
+    }
+
     new_assignments: list[Assignment] = []
     unfilled: list[UnfilledDuty] = []
     ordered_duties = sorted(duties, key=lambda duty: (duty.start, duty.end, str(duty.id)))
 
     for duty in ordered_duties:
         for slot_number in range(1, duty.required_invigilators + 1):
+            if (duty.id, slot_number) in filled_positions:
+                continue  # this position is already filled
+
             eligible: list[tuple[float, int, str, StaffMember]] = []
             blocked_reasons: list[str] = []
 
