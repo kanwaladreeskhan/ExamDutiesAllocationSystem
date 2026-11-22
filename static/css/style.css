@@ -1,0 +1,79 @@
+:root {
+    --primary: #1a237e;
+    --primary-light: #3949ab;
+    --bg: #f4f7f6;
+    --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --radius: 10px;
+    --transition: all 0.25s ease;
+}
+
+body {
+    background-color: var(--bg);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: #212529;
+}
+
+.navbar-custom {
+    background-color: var(--primary) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.navbar-custom .navbar-brand,
+.navbar-custom .nav-link {
+    color: #ffffff !important;
+    font-weight: 500;
+}
+
+.navbar-custom .nav-link:hover {
+    color: #e3f2fd !important;
+}
+
+.dashboard-card {
+    border: none;
+    border-radius: var(--radius);
+    box-shadow: var(--card-shadow);
+    transition: var(--transition);
+}
+
+.dashboard-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.table-custom thead th {
+    background-color: var(--primary);
+    color: #fff;
+    font-weight: 600;
+    border: none;
+}
+
+.table-custom td {
+    vertical-align: middle;
+}
+
+.badge {
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    body {
+        background: white;
+        font-size: 12pt;
+    }
+
+    .table-custom thead th {
+        background-color: #e0e0e0 !important;
+        color: #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .print-header {
+        border-bottom: 2px solid #000;
+    }
+}
