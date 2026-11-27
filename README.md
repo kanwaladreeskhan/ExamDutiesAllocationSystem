@@ -39,3 +39,8 @@ templates/       HTML templates (base.html, home.html)
 - Kanwal Bibi (Team Leader)
 - Aamnah Attariah
 - Iffat Batool
+
+Login credentials (README mein likhna):
+
+Coordinator: coordinator / Coord@12345
+Staff: ali.khan (aur baqi) / Staff@12345
