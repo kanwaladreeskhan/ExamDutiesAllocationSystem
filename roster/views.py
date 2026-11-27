@@ -1,9 +1,10 @@
 from datetime import date, time, datetime
-
+from accounts.decorators import coordinator_required
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.contrib import messages
 from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
@@ -36,6 +37,7 @@ SAMPLE_DUTIES = [
 
 
 # Staff dashboard view (FR-10) - with Filters
+@login_required
 def staff_dashboard(request):
     duties = SAMPLE_DUTIES.copy()
 
@@ -59,11 +61,13 @@ def staff_dashboard(request):
 
 
 # Coordinator dashboard view
+@coordinator_required
 def coordinator_dashboard(request):
     return render(request, "coordinator/dashboard.html")
 
 
 # Print roster view (FR-11)
+@login_required
 def print_roster(request):
     return render(
         request,
@@ -78,6 +82,7 @@ def print_roster(request):
 
 
 # Placeholder for allocation algorithm (Future implementation)
+@coordinator_required
 @require_POST
 def generate_roster(request):
     messages.info(request, "Roster generation is a placeholder until allocation logic is added.")
@@ -85,6 +90,7 @@ def generate_roster(request):
 
 
 # Placeholder for saving draft
+@coordinator_required
 @require_POST
 def save_draft(request):
     messages.success(request, "Draft action received. Database saving is not implemented yet.")
@@ -92,10 +98,11 @@ def save_draft(request):
 
 
 # Publish roster and send real-time notification via WebSockets
+@coordinator_required
 @require_POST
 def publish_roster(request):
     channel_layer = get_channel_layer()
-    
+
     # Broadcast message to all connected staff clients
     async_to_sync(channel_layer.group_send)(
         "notifications",
@@ -104,43 +111,10 @@ def publish_roster(request):
             "message": "New exam duty roster has been published! Please check your duties.",
         }
     )
-    
+
     messages.success(request, "Roster published and staff have been notified in real-time.")
     return redirect("coordinator")
 
 
 # ==========================================
-# FR-11: CSV Export functionality
-# ==========================================
-def export_roster_csv(request):
-    # Create HTTP response with CSV content type
-    response = HttpResponse(content_type='text/csv')
-    
-    # Set filename for download
-    response['Content-Disposition'] = 'attachment; filename="my_exam_duties.csv"'
-
-    writer = csv.writer(response)
-    
-    # Write header row
-    writer.writerow(['Date', 'Start Time', 'End Time', 'Room', 'Course Code', 'Role', 'Status'])
-
-    # Iterate through duties and write data rows
-    for duty in SAMPLE_DUTIES:
-        writer.writerow([
-            duty['date'], 
-            duty['start_time'], 
-            duty['end_time'], 
-            duty['room'], 
-            duty['course_code'], 
-            duty['role'], 
-            duty['status']
-        ])
-
-    return response
-# ==========================================
-
-
-# Logout and redirect to login page
-def logout_view(request):
-    logout(request)
-    return redirect("dashboard")
+#
