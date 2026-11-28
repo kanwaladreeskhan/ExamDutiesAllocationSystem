@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Coordinator Dashboard | ExamDuty Pro{% endblock %}
+{% block title %}Coordinator Dashboard | ExamDuty{% endblock %}
 
 {% block content %}
 <style>
     /* ==========================================================================
-       ExamDuty Pro - Coordinator Dashboard Styling
+       ExamDuty - Coordinator Dashboard Styling
        Theme: Bahria University Olive-Sage (#52674e / #647b60 / #7a9176 / #eef1ed)
        Accents: CMS Green (#5cb85c / #4cae4c) & Coral Red (#d9534f)
        ========================================================================== */
@@ -216,7 +216,7 @@
 <div class="space-y-6">
 
     <!-- ======================================================================
-         1. CMS Breadcrumb & Roster Snapshot Ribbon
+1. CMS Breadcrumb Ribbon
          ====================================================================== -->
     <div class="ed-reveal cms-breadcrumb flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center flex-wrap gap-1">
@@ -226,29 +226,10 @@
             <span class="mx-1 text-slate-400">/</span>
             <span class="font-semibold text-slate-700">Coordinator Dashboard</span>
         </div>
-
-        <div class="flex items-center gap-2">
-            {% if latest_roster %}
-                <span class="inline-flex items-center gap-1.5 rounded-xs px-2.5 py-0.5 text-[11px] font-semibold border
-                    {% if latest_roster.status == 'PUBLISHED' %}
-                        bg-[#5cb85c]/15 text-[#2e6f2e] border-[#5cb85c]/45
-                    {% else %}
-                        bg-amber-50 text-amber-800 border-amber-300
-                    {% endif %}">
-                    <span class="ed-live-dot h-1.5 w-1.5 rounded-full
-                        {% if latest_roster.status == 'PUBLISHED' %}bg-[#4cae4c]{% else %}bg-amber-500{% endif %}"></span>
-                    Roster v{{ latest_roster.version }} &bull; {{ latest_roster.get_status_display }}
-                </span>
-            {% else %}
-                <span class="inline-flex items-center gap-1.5 rounded-xs border border-slate-300 bg-white px-2.5 py-0.5 text-[11px] font-medium text-slate-600">
-                    No Active Snapshot
-                </span>
-            {% endif %}
-        </div>
     </div>
 
     <!-- ======================================================================
-         2. Page Header & Quick Data Management Navigation Bar
+2. Page Header & Quick Data Management Navigation Bar
          ====================================================================== -->
     <div class="ed-reveal flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 border-b border-slate-300 pb-4" style="animation-delay: 0.04s;">
         <div class="flex items-start gap-3">
@@ -258,16 +239,6 @@
             <div>
                 <div class="flex flex-wrap items-center gap-2.5">
                     <h1 class="text-2xl font-bold tracking-tight text-slate-900">Coordinator Dashboard</h1>
-                    {% if latest_roster %}
-                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border
-                            {% if latest_roster.status == 'PUBLISHED' %}
-                                bg-[#5cb85c]/15 text-[#2e6f2e] border-[#5cb85c]/45
-                            {% else %}
-                                bg-amber-50 text-amber-800 border-amber-300
-                            {% endif %}">
-                            Roster v{{ latest_roster.version }} &bull; {{ latest_roster.get_status_display }}
-                        </span>
-                    {% endif %}
                 </div>
                 <p class="mt-1 text-xs sm:text-sm text-slate-600">
                     Manage exam schedules, run automatic duty allocation, and publish real-time rosters.
@@ -301,7 +272,7 @@
     </div>
 
     <!-- ======================================================================
-         3. Django Messages & Unfilled Slot Warnings
+3. Django Messages & Unfilled Slot Warnings
          ====================================================================== -->
     {% if messages %}
         <div class="space-y-2">
@@ -353,7 +324,7 @@
     {% endif %}
 
     <!-- ======================================================================
-         4. KPI Summary Strip (4 Cards)
+4. KPI Summary Strip (4 Cards)
          ====================================================================== -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- KPI 1: Active Roster -->
@@ -422,7 +393,7 @@
     </div>
 
     <!-- ======================================================================
-         5. Roster Workflow Action Cards (Generate, Save Draft, Publish)
+5. Roster Workflow Action Cards (Generate, Save Draft, Publish)
          ====================================================================== -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <!-- Step 1: Generate Roster -->
@@ -496,7 +467,7 @@
     </div>
 
     <!-- ======================================================================
-         6. Interactive Workload & Slot Coverage Analytics
+6. Interactive Workload & Slot Coverage Analytics
          ====================================================================== -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <!-- Staff Workload & Duty Distribution -->
@@ -542,7 +513,7 @@
     </div>
 
     <!-- ======================================================================
-         7. Audit Change Log (FR-12)
+7. Audit Change Log (FR-12)
          ====================================================================== -->
     <div class="ed-card ed-reveal overflow-hidden" style="animation-delay: 0.44s;">
         <div class="ed-card-header flex flex-wrap items-center justify-between gap-2">
@@ -598,7 +569,7 @@
 </div>
 
 <!-- ==========================================================================
-     8. Chart.js Data Payload & Initialization
+8. Chart.js Data Payload & Initialization
      ========================================================================== -->
 <script id="chart-data" type="application/json">
 {

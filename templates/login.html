@@ -1,139 +1,278 @@
-{% extends 'base.html' %}
-
-{% block title %}Sign In | ExamDuty Pro{% endblock %}
-
-{% block unauth_content %}
-<style>
-    @keyframes loginCardReveal {
-        from {
-            opacity: 0;
-            transform: translateY(10px) scale(0.99);
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamDuty Sign In | Bahria University</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --ed-sage-dark: #435540;
+            --ed-sage-primary: #52674e;
+            --ed-sage-mid: #647b60;
+            --ed-sage-light: #7a9176;
+            --ed-sage-tint: #eef1ed;
+            --ed-sage-soft: #f5f7f4;
         }
-        to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
+
+        @keyframes edPortalFade {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-    }
 
-    .login-panel {
-        animation: loginCardReveal 0.36s cubic-bezier(0.16, 1, 0.3, 1) both;
-        transition: border-color 180ms ease, box-shadow 180ms ease;
-    }
+        .ed-portal-card {
+            animation: edPortalFade 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
 
-    .login-panel:hover {
-        border-color: #7a9176;
-        box-shadow: 0 12px 24px -10px rgba(67, 85, 64, 0.2);
-    }
+        .ed-campus-backdrop {
+            position: relative;
+            background:
+                radial-gradient(circle at 18% 18%, rgba(255, 224, 192, 0.55), transparent 45%),
+                radial-gradient(circle at 80% 24%, rgba(190, 218, 236, 0.55), transparent 48%),
+                radial-gradient(circle at 50% 88%, rgba(122, 145, 118, 0.58), transparent 55%),
+                linear-gradient(180deg, #eadfd2 0%, #c8d2c6 50%, #7d907a 100%);
+            overflow: hidden;
+        }
 
-    .login-card-bar {
-        background-color: #f0f0f0;
-        border-bottom: 1px solid #dcdcdc;
-    }
+        .ed-campus-backdrop::before {
+            content: "";
+            position: absolute;
+            inset: -16px;
+            background:
+                linear-gradient(to top, rgba(67, 85, 64, 0.5) 0%, rgba(100, 123, 96, 0.2) 38%, transparent 72%),
+                repeating-linear-gradient(
+                    to right,
+                    rgba(255, 255, 255, 0.14) 0px,
+                    rgba(255, 255, 255, 0.14) 16px,
+                    transparent 16px,
+                    transparent 34px
+                );
+            filter: blur(8px);
+            pointer-events: none;
+        }
 
-    .login-btn-olive {
-        background-color: #52674e;
-        border: 1px solid #435540;
-        color: #ffffff;
-        transition: background-color 160ms ease, transform 130ms ease, box-shadow 160ms ease;
-    }
+        .ed-campus-backdrop::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            background-color: rgba(255, 255, 255, 0.1);
+            pointer-events: none;
+        }
 
-    .login-btn-olive:hover {
-        background-color: #435540;
-        transform: translateY(-1px);
-        box-shadow: 0 5px 12px -3px rgba(67, 85, 64, 0.4);
-    }
+        .ed-input-row {
+            display: flex;
+            align-items: stretch;
+            height: 28px;
+            border: 1px solid #cbd5e1;
+            border-radius: 3px;
+            background-color: #ffffff;
+            overflow: hidden;
+            transition: border-color 140ms ease, box-shadow 140ms ease;
+        }
 
-    .login-btn-olive:active {
-        transform: translateY(0) scale(0.985);
-    }
-</style>
+        .ed-input-row:focus-within {
+            border-color: #52674e;
+            box-shadow: 0 0 0 2px rgba(82, 103, 78, 0.16);
+        }
 
-<div class="min-h-screen flex flex-col justify-between bg-[#eef1ed] text-slate-900">
-    <!-- Top Olive-Sage Accent Line -->
-    <div class="h-1.5 w-full bg-[#52674e]"></div>
+        .ed-input-prefix {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            background-color: #f3f5f2;
+            border-right: 1px solid #cbd5e1;
+            color: #475569;
+            font-size: 11px;
+            flex-shrink: 0;
+        }
 
-    <!-- Centered Login Card -->
-    <main class="flex flex-1 items-center justify-center px-4 py-12">
-        <div class="login-panel w-full max-w-md rounded-md border border-slate-300 bg-white shadow-2xs overflow-hidden">
+        .ed-input-control {
+            width: 100%;
+            height: 100%;
+            padding: 0 9px;
+            font-size: 11.5px;
+            font-weight: 400;
+            color: #0f172a;
+            background-color: #ffffff;
+            border: 0;
+            outline: none;
+        }
 
-            <!-- Card Top Status Strip -->
-            <div class="login-card-bar flex items-center justify-between px-6 py-3 text-xs">
-                <div class="flex items-center gap-2">
-                    <span class="h-2 w-2 rounded-full bg-[#5cb85c]"></span>
-                    <span class="font-bold text-slate-700">Examination Portal</span>
-                </div>
-                <span class="rounded-xs bg-[#eef1ed] border border-[#7a9176]/45 px-2.5 py-0.5 text-[11px] font-semibold text-[#435540]">
-                    Sign In
-                </span>
+        .ed-input-control::placeholder {
+            color: #94a3b8;
+            font-size: 11px;
+        }
+
+        .ed-btn-submit {
+            height: 29px;
+            background-color: #52674e;
+            border: 1px solid #435540;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 500;
+            border-radius: 3px;
+            transition: background-color 150ms ease, box-shadow 150ms ease;
+        }
+
+        .ed-btn-submit:hover {
+            background-color: #435540;
+            box-shadow: 0 3px 8px -2px rgba(67, 85, 64, 0.4);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#f5f7f4] text-slate-800 antialiased">
+
+    <!-- Large Bahria University Top Bar -->
+    <header class="bg-[#52674e] text-white border-b border-[#435540]">
+        <div class="w-full px-5 h-[54px] flex items-center justify-between">
+            <span class="text-[22px] sm:text-[25px] font-semibold tracking-tight leading-none">Bahria University</span>
+        </div>
+    </header>
+
+    <!-- Sub-Header Strip -->
+    <div class="bg-white border-b border-slate-200 h-[48px] px-4 flex items-center justify-center">
+        <h1 class="text-[20px] sm:text-[22px] font-semibold tracking-tight text-slate-800 leading-none">
+            ExamDuty
+        </h1>
+    </div>
+
+    <!-- Main Backdrop & Centered Sign-In Box Positioned Slightly Higher -->
+    <main class="ed-campus-backdrop flex-1 flex flex-col items-center justify-start px-4 pt-6 pb-14">
+        <div class="ed-portal-card relative z-10 w-full max-w-[430px] rounded-[4px] border border-[#cfd6cd] bg-white shadow-md overflow-hidden">
+
+            <!-- Card Header -->
+            <div class="bg-gradient-to-b from-[#f8f9f8] to-[#eaeeea] border-b border-[#d4dad2] px-4 py-2.5">
+                <h2 class="text-[14px] font-semibold text-slate-700 leading-tight">ExamDuty Sign in</h2>
             </div>
 
-            <!-- Form Body -->
-            <div class="p-7 sm:p-8">
-                <div class="mb-6">
-                    <p class="text-[11px] font-bold uppercase tracking-wider text-[#52674e]">
-                        ExamDuty Pro &bull; Bahria University
-                    </p>
-                    <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">Sign in</h1>
-                    <p class="mt-1 text-xs sm:text-sm text-slate-600">
-                        Access your coordinator or faculty invigilation schedule.
-                    </p>
-                </div>
-
-                {% if form.errors or form.non_field_errors %}
-                <div class="mb-5 rounded-xs border border-[#d9534f]/45 bg-[#d9534f]/10 px-4 py-3 text-xs font-semibold text-[#a92824]">
-                    {% if form.non_field_errors %}
-                        {{ form.non_field_errors|striptags }}
-                    {% else %}
-                        Invalid username or password. Please verify your credentials and try again.
-                    {% endif %}
-                </div>
+            <div class="p-3.5 space-y-2.5">
+                {% if messages %}
+                    <div class="space-y-1.5">
+                        {% for message in messages %}
+                            <div class="rounded-[3px] border px-2.5 py-1.5 text-[11px] font-normal
+                                {% if 'error' in message.tags or 'warning' in message.tags %}
+                                    border-[#d9534f]/45 bg-[#d9534f]/10 text-[#a92824]
+                                {% else %}
+                                    border-[#5cb85c]/45 bg-[#5cb85c]/10 text-[#265e26]
+                                {% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
                 {% endif %}
 
-                <form method="POST" class="space-y-4">
+                {% if form.non_field_errors %}
+                    <div class="rounded-[3px] border border-[#d9534f]/45 bg-[#d9534f]/10 px-2.5 py-1.5 text-[11px] font-medium text-[#a92824]">
+                        {{ form.non_field_errors|striptags }}
+                    </div>
+                {% endif %}
+
+                <form method="POST" action="{% url 'login' %}" class="space-y-2">
                     {% csrf_token %}
+                    {% if next %}
+                        <input type="hidden" name="next" value="{{ next }}">
+                    {% endif %}
 
+                    <!-- Username -->
                     <div>
-                        <label for="id_username" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                            Username
+                        <label for="id_username" class="block text-[11px] font-medium text-slate-700 mb-0.5">
+                            Username:
                         </label>
-                        <input type="text"
-                               name="username"
-                               id="id_username"
-                               value="{{ form.username.value|default:'' }}"
-                               required
-                               autofocus
-                               placeholder="Enter your username"
-                               class="w-full rounded-xs border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#52674e] focus:outline-none transition">
+                        <div class="ed-input-row">
+                            <span class="ed-input-prefix" aria-hidden="true">&#128100;</span>
+                            <input
+                                type="text"
+                                name="username"
+                                id="id_username"
+                                value="{{ form.username.value|default:'' }}"
+                                placeholder="Username"
+                                autocomplete="username"
+                                required
+                                class="ed-input-control"
+                            >
+                        </div>
+                        {% if form.username.errors %}
+                            <p class="mt-0.5 text-[11px] text-[#d9534f]">{{ form.username.errors|striptags }}</p>
+                        {% endif %}
                     </div>
 
+                    <!-- Password -->
                     <div>
-                        <label for="id_password" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                            Password
+                        <label for="id_password" class="block text-[11px] font-medium text-slate-700 mb-0.5">
+                            Password:
                         </label>
-                        <input type="password"
-                               name="password"
-                               id="id_password"
-                               required
-                               placeholder="Enter your password"
-                               class="w-full rounded-xs border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#52674e] focus:outline-none transition">
+                        <div class="ed-input-row">
+                            <span class="ed-input-prefix" aria-hidden="true">&#128274;</span>
+                            <input
+                                type="password"
+                                name="password"
+                                id="id_password"
+                                placeholder="Password"
+                                autocomplete="current-password"
+                                required
+                                class="ed-input-control"
+                            >
+                        </div>
+                        {% if form.password.errors %}
+                            <p class="mt-0.5 text-[11px] text-[#d9534f]">{{ form.password.errors|striptags }}</p>
+                        {% endif %}
                     </div>
 
-                    <button type="submit"
-                            class="login-btn-olive mt-2 w-full rounded-xs px-4 py-2.5 text-sm font-semibold">
-                        Sign In
-                    </button>
+                    <!-- Institute -->
+                    {% with active_inst=selected_institute|default:"karachi_campus" %}
+                    <div>
+                        <label for="id_institute" class="block text-[11px] font-medium text-slate-700 mb-0.5">
+                            Institute:
+                        </label>
+                        <div class="ed-input-row">
+                            <span class="ed-input-prefix" aria-hidden="true">&#127963;</span>
+                            <select name="institute" id="id_institute" class="ed-input-control">
+                                <option value="" {% if active_inst == "" %}selected{% endif %}>Select</option>
+                                <option value="finishing_school" {% if active_inst == "finishing_school" %}selected{% endif %}>Finishing School</option>
+                                <option value="hsc_islamabad" {% if active_inst == "hsc_islamabad" %}selected{% endif %}>Health Sciences Campus (Islamabad)</option>
+                                <option value="hsc_karachi" {% if active_inst == "hsc_karachi" %}selected{% endif %}>Health Sciences Campus (Karachi)</option>
+                                <option value="ipp_karachi" {% if active_inst == "ipp_karachi" %}selected{% endif %}>IPP (Karachi)</option>
+                                <option value="islamabad_e8" {% if active_inst == "islamabad_e8" %}selected{% endif %}>Islamabad E-8 Campus</option>
+                                <option value="islamabad_h11" {% if active_inst == "islamabad_h11" %}selected{% endif %}>Islamabad H-11 Campus</option>
+                                <option value="karachi_campus" {% if active_inst == "karachi_campus" %}selected{% endif %}>Karachi Campus</option>
+                                <option value="lahore_campus" {% if active_inst == "lahore_campus" %}selected{% endif %}>Lahore Campus</option>
+                                <option value="nsh" {% if active_inst == "nsh" %}selected{% endif %}>NATIONAL SCHOOL OF HYDROGRAPHY</option>
+                                <option value="ncmpr" {% if active_inst == "ncmpr" %}selected{% endif %}>NCMPR</option>
+                                <option value="odl" {% if active_inst == "odl" %}selected{% endif %}>ODL</option>
+                                <option value="pn_nursing" {% if active_inst == "pn_nursing" %}selected{% endif %}>PN Nursing College</option>
+                                <option value="pn_logistics" {% if active_inst == "pn_logistics" %}selected{% endif %}>PN School Of Logistics</option>
+                                <option value="underwater_medicine" {% if active_inst == "underwater_medicine" %}selected{% endif %}>School for Underwater Medicine</option>
+                            </select>
+                        </div>
+                    </div>
+                    {% endwith %}
+
+                    <!-- Sign In Button -->
+                    <div class="pt-1">
+                        <button type="submit" class="ed-btn-submit w-full cursor-pointer">
+                            Sign In
+                        </button>
+                    </div>
                 </form>
-
-                <div class="mt-6 pt-4 border-t border-slate-200 text-center text-xs text-slate-500">
-                    Use your assigned portal credentials to continue
-                </div>
             </div>
         </div>
     </main>
 
-    <!-- Clean Footer -->
-    <footer class="w-full border-t border-slate-300 bg-[#f5f7f4] py-4 text-center text-xs text-slate-600">
-        Exam Duties Allocation System &bull; <span class="font-semibold text-[#52674e]">Bahria University Karachi Campus</span>
+    <!-- Footer -->
+    <footer class="bg-[#eef1ed] border-t border-[#d4dad2] px-4 py-1 text-[11px] text-slate-600 flex items-center justify-between">
+        <span>2026 &copy; Bahria University</span>
+        <span class="font-medium text-[#52674e]">ExamDuty</span>
     </footer>
-</div>
-{% endblock %}
+
+</body>
+</html>

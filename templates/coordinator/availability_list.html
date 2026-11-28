@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Staff Availability | ExamDuty Pro{% endblock %}
+{% block title %}Staff Availability | ExamDuty{% endblock %}
 
 {% block content %}
 <style>
@@ -72,11 +72,11 @@
         color: #ffffff;
     }
 
-    .availability-row {
+    .avail-row {
         transition: background-color 140ms ease;
     }
 
-    .availability-row:hover td {
+    .avail-row:hover td {
         background-color: #f5f7f4;
     }
 </style>
@@ -92,9 +92,6 @@
             <span class="mx-1.5 text-slate-400">/</span>
             <span class="font-semibold text-slate-700">Staff Availability</span>
         </div>
-        <span class="rounded-xs border border-[#7a9176]/40 bg-[#eef1ed] px-2.5 py-0.5 text-[11px] font-bold text-[#435540]">
-            FR-03
-        </span>
     </div>
 
     <!-- Page Header -->
@@ -105,9 +102,6 @@
                     &#128197;
                 </span>
                 <h1 class="text-2xl font-bold tracking-tight text-slate-900">Staff Availability</h1>
-                <span class="inline-flex items-center rounded-xs bg-[#eef1ed] border border-[#7a9176]/45 px-2.5 py-0.5 text-xs font-semibold text-[#435540]">
-                    FR-03
-                </span>
             </div>
             <p class="mt-1 text-xs sm:text-sm text-slate-600">
                 Manage date and time availability windows used by the automated duty allocation engine.
@@ -130,7 +124,7 @@
         </div>
         <div class="p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div class="relative w-full sm:w-80">
-                <input type="text" id="availabilitySearch" onkeyup="filterAvailability()"
+                <input type="text" id="availSearch" onkeyup="filterAvailability()"
                        placeholder="Search by staff name or date..."
                        class="w-full rounded-xs border border-slate-300 bg-white pl-3.5 pr-4 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-[#52674e] focus:outline-none transition">
             </div>
@@ -140,7 +134,7 @@
         </div>
     </div>
 
-    <!-- Availability Table -->
+    <!-- Recorded Availability Schedule Table -->
     <div class="avail-list-panel rounded-md border border-slate-300 bg-white shadow-2xs overflow-hidden" style="animation-delay: 0.12s;">
         <div class="avail-card-bar flex items-center justify-between px-4 py-2.5">
             <h2 class="text-xs font-bold uppercase tracking-wider text-slate-700">Recorded Availability Schedule</h2>
@@ -150,7 +144,7 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table id="availabilityTable" class="cms-table min-w-full divide-y divide-slate-200 text-xs sm:text-sm">
+            <table id="availTable" class="cms-table min-w-full divide-y divide-slate-200 text-xs sm:text-sm">
                 <thead class="bg-[#f5f7f4] text-[11px] font-bold uppercase tracking-wider text-slate-600">
                     <tr>
                         <th class="px-6 py-3.5 text-left">Staff Member</th>
@@ -161,26 +155,34 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200 bg-white">
-                    {% for a in object_list %}
-                    <tr class="availability-row">
+                    {% for item in object_list %}
+                    <tr class="avail-row">
                         <td class="px-6 py-3.5 whitespace-nowrap">
-                            <div class="flex items-center gap-2.5">
-                                <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#eef1ed] border border-[#7a9176]/45 text-[#435540] text-xs font-bold">
-                                    {{ a.staff|stringformat:"s"|slice:":1"|upper }}
+                            <div class="flex items-center gap-3">
+                                {% with display_name=item.staff.user.get_full_name|default:item.staff.user.username|default:item.staff %}
+                                <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#eef1ed] border border-[#7a9176]/45 text-[#435540] text-xs font-bold">
+                                    {{ display_name|stringformat:"s"|slice:":1"|upper }}
                                 </span>
-                                <span class="font-semibold text-slate-900">{{ a.staff }}</span>
+                                <span class="font-semibold text-slate-900">
+                                    {{ display_name }}
+                                </span>
+                                {% endwith %}
                             </div>
                         </td>
-                        <td class="px-6 py-3.5 whitespace-nowrap font-medium text-slate-700">{{ a.date }}</td>
-                        <td class="px-6 py-3.5 whitespace-nowrap font-mono text-xs text-slate-600">
-                            {% if a.start_time %}
-                                {{ a.start_time|time:"H:i" }} &ndash; {{ a.end_time|time:"H:i" }}
+                        <td class="px-6 py-3.5 whitespace-nowrap font-medium text-slate-800">
+                            {{ item.date }}
+                        </td>
+                        <td class="px-6 py-3.5 whitespace-nowrap font-mono text-xs text-slate-700">
+                            {% if item.start_time and item.end_time %}
+                                {{ item.start_time|time:"H:i" }} &ndash; {{ item.end_time|time:"H:i" }}
                             {% else %}
-                                <span class="inline-flex items-center rounded-xs bg-[#eef1ed] border border-[#7a9176]/35 px-2 py-0.5 font-sans text-xs font-medium text-[#435540]">Whole Day</span>
+                                <span class="inline-flex items-center rounded-xs bg-[#f5f7f4] border border-slate-300 px-2.5 py-0.5 font-sans text-xs font-medium text-slate-700">
+                                    Whole Day
+                                </span>
                             {% endif %}
                         </td>
                         <td class="px-6 py-3.5 whitespace-nowrap">
-                            {% if a.is_available %}
+                            {% if item.is_available %}
                                 <span class="inline-flex items-center gap-1.5 rounded-xs bg-[#5cb85c]/15 border border-[#5cb85c]/45 px-2.5 py-0.5 text-xs font-semibold text-[#2e6f2e]">
                                     <span class="h-1.5 w-1.5 rounded-full bg-[#4cae4c]"></span>
                                     Available
@@ -193,11 +195,11 @@
                             {% endif %}
                         </td>
                         <td class="px-6 py-3.5 whitespace-nowrap text-right space-x-2">
-                            <a href="{% url 'manage:availability_edit' a.pk %}"
+                            <a href="{% url 'manage:availability_edit' item.pk %}"
                                class="avail-btn-edit inline-flex items-center rounded-xs px-3 py-1 text-xs font-semibold">
                                 Edit
                             </a>
-                            <a href="{% url 'manage:availability_delete' a.pk %}"
+                            <a href="{% url 'manage:availability_delete' item.pk %}"
                                class="avail-btn-delete inline-flex items-center rounded-xs px-3 py-1 text-xs font-semibold">
                                 Delete
                             </a>
@@ -206,7 +208,7 @@
                     {% empty %}
                     <tr>
                         <td colspan="5" class="px-6 py-10 text-center text-xs sm:text-sm text-slate-500">
-                            No availability entries recorded yet. Click <strong>+ Add Availability Entry</strong> to create one.
+                            No availability entries recorded yet. Click <strong>+ Add Availability Entry</strong> to add one.
                         </td>
                     </tr>
                     {% endfor %}
@@ -219,8 +221,8 @@
 
 <script>
 function filterAvailability() {
-    const query = document.getElementById('availabilitySearch').value.toLowerCase();
-    document.querySelectorAll('#availabilityTable .availability-row').forEach(row => {
+    const query = document.getElementById('availSearch').value.toLowerCase();
+    document.querySelectorAll('#availTable .avail-row').forEach(row => {
         row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
     });
 }

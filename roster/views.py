@@ -1,23 +1,93 @@
 import csv
 import json
+import re
 from collections import defaultdict
 from datetime import datetime
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.contrib import messages
-from django.contrib.auth import logout
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from accounts.decorators import coordinator_required
 from .models import Assignment, Roster, RosterChangeLog, SessionRoom, StaffProfile
 from .services.adapters import build_duty, build_staff_member
 from .services.allocation import allocate_duties
+
+ALLOWED_INSTITUTE = "karachi_campus"
+
+
+def _default_home_url_name(user):
+    if getattr(user, "role", None) == "COORDINATOR" or getattr(user, "is_staff", False):
+        return "coordinator"
+    return "dashboard"
+
+
+def _resolve_safe_next_url(request, fallback_name):
+    raw_next = (request.POST.get("next") or request.GET.get("next") or "").strip()
+    if raw_next and url_has_allowed_host_and_scheme(
+        url=raw_next,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return raw_next
+    return fallback_name
+
+
+def custom_login_view(request):
+    fallback_url = _default_home_url_name(request.user) if request.user.is_authenticated else "coordinator"
+
+    if request.user.is_authenticated:
+        return redirect(_resolve_safe_next_url(request, fallback_url))
+
+    selected_institute = ALLOWED_INSTITUTE
+    username_value = ""
+
+    if request.method == "POST":
+        username_value = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "")
+        selected_institute = request.POST.get("institute", "")
+        next_url = _resolve_safe_next_url(request, "coordinator")
+
+        if selected_institute != ALLOWED_INSTITUTE:
+            messages.error(
+                request,
+                "Access denied: ExamDuty is only for Bahria University Karachi Campus.",
+            )
+            return render(
+                request,
+                "login.html",
+                {
+                    "username_value": username_value,
+                    "selected_institute": selected_institute,
+                    "next": next_url,
+                },
+            )
+
+        user = authenticate(request, username=username_value, password=password)
+        if user is not None:
+            login(request, user)
+            role_target = _default_home_url_name(user)
+            return redirect(_resolve_safe_next_url(request, role_target))
+
+        messages.error(request, "Invalid username or password.")
+
+    return render(
+        request,
+        "login.html",
+        {
+            "username_value": username_value,
+            "selected_institute": selected_institute,
+            "next": request.GET.get("next", ""),
+        },
+    )
 
 
 def _duty_hours(session):
@@ -73,7 +143,15 @@ def _get_published_duties(user, room=None, date_str=None):
     return duties
 
 
-# Staff dashboard view (FR-10) - with Filters, Duty Count & Total Hours
+def _staff_csv_filename(user):
+    raw_name = (user.get_full_name() or user.username or "staff").strip()
+    safe_name = re.sub(r"[^A-Za-z0-9_-]+", "_", raw_name).strip("_")
+    if not safe_name:
+        safe_name = "staff"
+    return f"{safe_name}_exam_duties.csv"
+
+
+# Staff dashboard view with filters, duty count, and total hours
 @login_required
 def staff_dashboard(request):
     room = request.GET.get("room", "")
@@ -92,7 +170,7 @@ def staff_dashboard(request):
     )
 
 
-# Coordinator dashboard view with Workload Charts & Change Log
+# Coordinator dashboard view with workload charts and change log
 @coordinator_required
 def coordinator_dashboard(request):
     latest_roster = Roster.objects.order_by("-version", "-created_at").first()
@@ -141,7 +219,7 @@ def coordinator_dashboard(request):
     )
 
 
-# Print roster view (FR-11)
+# Print roster view
 @login_required
 def print_roster(request):
     duties = _get_published_duties(request.user)
@@ -158,7 +236,7 @@ def print_roster(request):
     )
 
 
-# Run automatic allocation algorithm and create a new Draft roster (FR-06, FR-07, FR-08)
+# Run automatic allocation algorithm and create a new Draft roster
 @coordinator_required
 @require_POST
 def generate_roster(request):
@@ -219,7 +297,7 @@ def generate_roster(request):
     return redirect("coordinator")
 
 
-# Save current roster as Draft (FR-11)
+# Save current roster as Draft
 @coordinator_required
 @require_POST
 def save_draft(request):
@@ -259,7 +337,7 @@ def save_draft(request):
     return redirect("coordinator")
 
 
-# Publish roster snapshot and send real-time notification via WebSockets (FR-11, FR-12)
+# Publish roster snapshot and send real-time notification via WebSockets
 @coordinator_required
 @require_POST
 def publish_roster(request):
@@ -292,24 +370,57 @@ def publish_roster(request):
     return redirect("coordinator")
 
 
-# FR-11: CSV Export functionality
+# CSV Export functionality
 @login_required
 def export_roster_csv(request):
     duties = _get_published_duties(request.user)
+    filename = _staff_csv_filename(request.user)
+    staff_label = request.user.get_full_name() or request.user.username
+
     response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = 'attachment; filename="my_exam_duties.csv"'
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
     writer = csv.writer(response)
-    writer.writerow(["Date", "Start Time", "End Time", "Room", "Course Code", "Role", "Hours", "Status"])
+    writer.writerow([
+        "Staff Name",
+        "Date",
+        "Start Time",
+        "End Time",
+        "Room",
+        "Course Code",
+        "Course Name",
+        "Role",
+        "Hours",
+        "Status",
+    ])
 
     for duty in duties:
+        formatted_date = (
+            duty["date"].strftime("%Y-%m-%d")
+            if hasattr(duty["date"], "strftime")
+            else duty["date"]
+        )
+        formatted_start = (
+            duty["start_time"].strftime("%H:%M")
+            if hasattr(duty["start_time"], "strftime")
+            else duty["start_time"]
+        )
+        formatted_end = (
+            duty["end_time"].strftime("%H:%M")
+            if hasattr(duty["end_time"], "strftime")
+            else duty["end_time"]
+        )
+        role_text = (duty["role"] or "Invigilator").strip().title()
+
         writer.writerow([
-            duty["date"],
-            duty["start_time"],
-            duty["end_time"],
+            staff_label,
+            formatted_date,
+            formatted_start,
+            formatted_end,
             duty["room"],
             duty["course_code"],
-            duty["role"],
+            duty["course_name"],
+            role_text,
             duty["hours"],
             duty["status"],
         ])
@@ -320,4 +431,5 @@ def export_roster_csv(request):
 # Logout and redirect to login page
 def logout_view(request):
     logout(request)
+    request.session.pop("unfilled_details", None)
     return redirect("login")

@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
 
-{% block title %}Replace Invigilator | ExamDuty Pro{% endblock %}
+{% block title %}Replace Invigilator | ExamDuty{% endblock %}
 
 {% block content %}
+{% url 'manage:assignment_list' as assignment_list_url %}
 <style>
     @keyframes replaceFadeIn {
         from {
@@ -28,6 +29,24 @@
     .replace-card-bar {
         background-color: #f0f0f0;
         border-bottom: 1px solid #dcdcdc;
+    }
+
+    .replace-btn-back {
+        background-color: #eef1ed;
+        border: 1px solid #7a9176;
+        color: #3b4b38;
+        transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, transform 130ms ease;
+    }
+
+    .replace-btn-back:hover {
+        background-color: #52674e;
+        border-color: #435540;
+        color: #ffffff;
+        transform: translateY(-1px);
+    }
+
+    .replace-btn-back:active {
+        transform: translateY(0) scale(0.985);
     }
 
     .replace-btn-green {
@@ -68,23 +87,25 @@
 
 <div class="max-w-2xl mx-auto space-y-5">
 
-    <!-- CMS Breadcrumb -->
-    <div class="replace-panel cms-breadcrumb flex items-center justify-between">
-        <div>
+    <!-- CMS Breadcrumb & Back Button -->
+    <div class="replace-panel cms-breadcrumb flex items-center justify-between gap-2">
+        <div class="text-xs">
             <a href="{% url 'coordinator' %}" class="font-semibold text-[#52674e] hover:underline">Home</a>
             <span class="mx-1.5 text-slate-400">/</span>
-            <a href="{% url 'manage:assignment_list' %}" class="font-semibold text-[#52674e] hover:underline">Duty Assignments</a>
+            <a href="{{ assignment_list_url }}" class="font-semibold text-[#52674e] hover:underline">Duty Assignments</a>
             <span class="mx-1.5 text-slate-400">/</span>
             <span class="font-semibold text-slate-700">Replace Invigilator</span>
         </div>
-        <span class="rounded-xs border border-[#7a9176]/40 bg-[#eef1ed] px-2 py-0.5 text-[10px] font-bold text-[#435540]">
-            FR-09
-        </span>
+        <button type="button"
+                onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href = '{{ assignment_list_url }}'; }"
+                class="replace-btn-back rounded-xs px-2.5 py-0.5 text-[11px] font-semibold cursor-pointer">
+            &larr; Back
+        </button>
     </div>
 
     <!-- Back Link & Header -->
     <div class="replace-panel" style="animation-delay: 0.04s;">
-        <a href="{% url 'manage:assignment_list' %}"
+        <a href="{{ assignment_list_url }}"
            class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#52674e] hover:text-[#435540] hover:underline transition">
             &larr; Back to Duty Assignments
         </a>
@@ -93,9 +114,6 @@
                 &#8644;
             </span>
             <h1 class="text-2xl font-bold tracking-tight text-slate-900">Replace Assigned Invigilator</h1>
-            <span class="inline-flex items-center rounded-xs bg-[#eef1ed] border border-[#7a9176]/45 px-2.5 py-0.5 text-xs font-semibold text-[#435540]">
-                FR-09
-            </span>
         </div>
         <p class="mt-1.5 text-xs sm:text-sm text-slate-600">
             Swap the assigned faculty member with a verified, conflict-free replacement.
@@ -148,12 +166,12 @@
                 {% endfor %}
 
                 <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-200">
-                    <a href="{% url 'manage:assignment_list' %}"
+                    <a href="{{ assignment_list_url }}"
                        class="replace-btn-cancel rounded-xs px-4 py-2 text-xs font-semibold">
                         Cancel
                     </a>
                     <button type="submit"
-                            class="replace-btn-green rounded-xs px-5 py-2 text-xs font-semibold">
+                            class="replace-btn-green rounded-xs px-5 py-2 text-xs font-semibold cursor-pointer">
                         Confirm Replacement
                     </button>
                 </div>

@@ -94,12 +94,12 @@
             <span>Official Printable Duty Slip &bull; Formatted for A4 Paper</span>
         </div>
         <div class="flex items-center gap-2.5">
-            <button type="button" onclick="window.close()"
-                    class="ed-btn-subtle rounded-xs px-3.5 py-1.5 text-xs font-semibold">
+            <button type="button" onclick="closeDutyTab()"
+                    class="ed-btn-subtle rounded-xs px-3.5 py-1.5 text-xs font-semibold cursor-pointer">
                 Close Tab
             </button>
             <button type="button" onclick="window.print()"
-                    class="ed-btn-olive rounded-xs px-4 py-1.5 text-xs font-semibold">
+                    class="ed-btn-olive rounded-xs px-4 py-1.5 text-xs font-semibold cursor-pointer">
                 Print / Save as PDF
             </button>
         </div>
@@ -202,7 +202,7 @@
         <!-- Official Sign-Off Footer -->
         <div class="mt-14 pt-6 border-t border-slate-300 flex flex-col sm:flex-row sm:items-end justify-between gap-6 text-xs text-slate-600">
             <div>
-                <p class="font-semibold text-slate-800">ExamDuty Pro &bull; Automated Allocation System</p>
+                <p class="font-semibold text-slate-800">ExamDuty &bull; Automated Allocation System</p>
                 <p class="mt-0.5 text-[11px] text-slate-500">Document generated electronically from published roster records.</p>
             </div>
             <div class="text-right">
@@ -212,6 +212,21 @@
         </div>
 
     </div>
+
+    <script>
+        function closeDutyTab() {
+            window.close();
+            setTimeout(function () {
+                if (!window.closed) {
+                    if (window.history.length > 1) {
+                        window.history.back();
+                    } else {
+                        window.location.href = "{% url 'coordinator' %}";
+                    }
+                }
+            }, 120);
+        }
+    </script>
 
 </body>
 </html>

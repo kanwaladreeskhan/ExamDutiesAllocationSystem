@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}{% if object %}Edit Room{% else %}Add Room{% endif %} | ExamDuty Pro{% endblock %}
+{% block title %}{% if object %}Edit Examination Room{% else %}Add Examination Room{% endif %} | ExamDuty{% endblock %}
 
 {% block content %}
 <style>
@@ -28,6 +28,40 @@
     .room-form-bar {
         background-color: #f0f0f0;
         border-bottom: 1px solid #dcdcdc;
+    }
+
+    .room-btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        border-radius: 0.25rem;
+        border: 1px solid #cbd5e1;
+        background-color: #ffffff;
+        padding: 0.4rem 0.75rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #334155;
+        transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 130ms ease, box-shadow 150ms ease;
+    }
+
+    .room-btn-back:hover {
+        background-color: #eef1ed;
+        border-color: #7a9176;
+        color: #435540;
+        transform: translateX(-2px);
+        box-shadow: 0 3px 8px -3px rgba(67, 85, 64, 0.2);
+    }
+
+    .room-btn-back:active {
+        transform: translateX(-1px) scale(0.985);
+    }
+
+    .room-btn-back svg {
+        transition: transform 150ms ease;
+    }
+
+    .room-btn-back:hover svg {
+        transform: translateX(-2px);
     }
 
     .room-form-btn-olive {
@@ -77,31 +111,32 @@
             <span class="mx-1.5 text-slate-400">/</span>
             <span class="font-semibold text-slate-700">{% if object %}Edit{% else %}Add{% endif %}</span>
         </div>
-        <span class="rounded-xs border border-[#7a9176]/40 bg-[#eef1ed] px-2 py-0.5 text-[10px] font-bold text-[#435540]">
-            FR-04
-        </span>
     </div>
 
-    <!-- Back Link & Header -->
+    <!-- Header & Back Button -->
     <div class="room-form-panel" style="animation-delay: 0.04s;">
-        <a href="{% url 'manage:room_list' %}"
-           class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#52674e] hover:text-[#435540] hover:underline transition">
-            &larr; Back to Examination Rooms
-        </a>
-        <div class="mt-2 flex items-center gap-2.5 border-b border-slate-300 pb-3">
-            <span class="flex h-7 w-7 items-center justify-center rounded-xs border border-[#7a9176]/50 bg-[#eef1ed] text-[#52674e] text-xs font-bold">
-                &#127979;
-            </span>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900">
-                {% if object %}Edit Examination Room{% else %}Add Examination Room{% endif %}
-            </h1>
-            <span class="inline-flex items-center rounded-xs bg-[#eef1ed] border border-[#7a9176]/45 px-2.5 py-0.5 text-xs font-semibold text-[#435540]">
-                FR-04
-            </span>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-300 pb-3.5">
+            <div class="flex items-center gap-2.5">
+                <span class="flex h-8 w-8 items-center justify-center rounded-xs border border-[#7a9176]/50 bg-[#eef1ed] text-[#52674e] text-sm font-bold shadow-2xs">
+                    &#127979;
+                </span>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight text-slate-900">
+                        {% if object %}Edit Examination Room{% else %}Add Examination Room{% endif %}
+                    </h1>
+                    <p class="mt-0.5 text-xs sm:text-sm text-slate-600">
+                        Define room identifier and seating capacity for exam session scheduling.
+                    </p>
+                </div>
+            </div>
+
+            <a href="{% url 'manage:room_list' %}" class="room-btn-back shrink-0 self-start sm:self-auto">
+                <svg class="h-3.5 w-3.5 text-[#52674e]" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
+                </svg>
+                <span>Back to Rooms</span>
+            </a>
         </div>
-        <p class="mt-1.5 text-xs sm:text-sm text-slate-600">
-            Define room identifier and seating capacity for exam session scheduling.
-        </p>
     </div>
 
     <!-- Form Card -->

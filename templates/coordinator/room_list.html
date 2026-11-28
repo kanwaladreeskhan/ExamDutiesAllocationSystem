@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Examination Rooms | ExamDuty Pro{% endblock %}
+{% block title %}Examination Rooms | ExamDuty{% endblock %}
 
 {% block content %}
 <style>
@@ -92,9 +92,6 @@
             <span class="mx-1.5 text-slate-400">/</span>
             <span class="font-semibold text-slate-700">Examination Rooms</span>
         </div>
-        <span class="rounded-xs border border-[#7a9176]/40 bg-[#eef1ed] px-2.5 py-0.5 text-[11px] font-bold text-[#435540]">
-            FR-04
-        </span>
     </div>
 
     <!-- Page Header -->
@@ -105,9 +102,6 @@
                     &#127979;
                 </span>
                 <h1 class="text-2xl font-bold tracking-tight text-slate-900">Examination Rooms</h1>
-                <span class="inline-flex items-center rounded-xs bg-[#eef1ed] border border-[#7a9176]/45 px-2.5 py-0.5 text-xs font-semibold text-[#435540]">
-                    FR-04
-                </span>
             </div>
             <p class="mt-1 text-xs sm:text-sm text-slate-600">
                 Manage exam venues and student seating capacities across campus.
@@ -140,7 +134,7 @@
         </div>
     </div>
 
-    <!-- Rooms Table -->
+    <!-- Configured Examination Rooms Table -->
     <div class="room-list-panel rounded-md border border-slate-300 bg-white shadow-2xs overflow-hidden" style="animation-delay: 0.12s;">
         <div class="room-card-bar flex items-center justify-between px-4 py-2.5">
             <h2 class="text-xs font-bold uppercase tracking-wider text-slate-700">Configured Examination Rooms</h2>
@@ -150,7 +144,7 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table id="roomsTable" class="cms-table min-w-full divide-y divide-slate-200 text-xs sm:text-sm">
+            <table id="roomTable" class="cms-table min-w-full divide-y divide-slate-200 text-xs sm:text-sm">
                 <thead class="bg-[#f5f7f4] text-[11px] font-bold uppercase tracking-wider text-slate-600">
                     <tr>
                         <th class="px-6 py-3.5 text-left">Room Identifier</th>
@@ -159,25 +153,25 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200 bg-white">
-                    {% for room in object_list %}
+                    {% for r in object_list %}
                     <tr class="room-row">
                         <td class="px-6 py-3.5 whitespace-nowrap">
-                            <span class="inline-flex items-center rounded-xs bg-[#eef1ed] border border-[#7a9176]/40 px-3 py-1 text-xs font-bold text-[#435540]">
-                                {{ room.name }}
+                            <span class="inline-flex items-center rounded-xs bg-[#f5f7f4] border border-slate-300 px-3 py-1 font-mono text-xs font-bold text-slate-900">
+                                {{ r.name }}
                             </span>
                         </td>
                         <td class="px-6 py-3.5 whitespace-nowrap">
                             <span class="inline-flex items-center gap-1.5 rounded-xs bg-[#5cb85c]/15 border border-[#5cb85c]/45 px-2.5 py-0.5 text-xs font-semibold text-[#2e6f2e]">
                                 <span class="h-1.5 w-1.5 rounded-full bg-[#4cae4c]"></span>
-                                {{ room.capacity }} Students
+                                {{ r.capacity }} Students
                             </span>
                         </td>
                         <td class="px-6 py-3.5 whitespace-nowrap text-right space-x-2">
-                            <a href="{% url 'manage:room_edit' room.pk %}"
+                            <a href="{% url 'manage:room_edit' r.pk %}"
                                class="room-btn-edit inline-flex items-center rounded-xs px-3 py-1 text-xs font-semibold">
                                 Edit
                             </a>
-                            <a href="{% url 'manage:room_delete' room.pk %}"
+                            <a href="{% url 'manage:room_delete' r.pk %}"
                                class="room-btn-delete inline-flex items-center rounded-xs px-3 py-1 text-xs font-semibold">
                                 Delete
                             </a>
@@ -200,7 +194,7 @@
 <script>
 function filterRooms() {
     const query = document.getElementById('roomSearch').value.toLowerCase();
-    document.querySelectorAll('#roomsTable .room-row').forEach(row => {
+    document.querySelectorAll('#roomTable .room-row').forEach(row => {
         row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
     });
 }
