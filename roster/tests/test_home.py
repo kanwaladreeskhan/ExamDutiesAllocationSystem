@@ -1,7 +1,9 @@
-"""Smoke test: the home page loads."""
+import pytest
 from django.test import Client
 
 
-def test_home_page_loads():
+@pytest.mark.django_db
+def test_home_redirects_anonymous_to_login():
     response = Client().get("/")
-    assert response.status_code == 200
+    assert response.status_code == 302
+    assert "/accounts/login/" in response.url
