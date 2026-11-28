@@ -1,84 +1,210 @@
 {% extends 'base.html' %}
-{% load static %}
+
+{% block title %}Exam Duties | ExamDuty Pro{% endblock %}
 
 {% block content %}
-<!-- Header Area with Buttons -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="mb-0">My Exam Duties</h3>
-    <div>
-        <!-- Print Duty Sheet Button (FR-11) -->
-        <a href="{% url 'print_roster' %}" class="btn btn-outline-primary">
-            Print Duty Sheet
-        </a>
-        
-        <!-- Export CSV Button (FR-11) -->
-        <a href="{% url 'export_csv' %}" class="btn btn-success ms-2">
-            Export CSV
-        </a>
+<style>
+    @keyframes dutyViewFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .duty-panel {
+        animation: dutyViewFadeIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+        transition: border-color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .duty-panel:hover {
+        border-color: #7a9176;
+        box-shadow: 0 8px 20px -10px rgba(82, 103, 78, 0.16);
+    }
+
+    .duty-card-bar {
+        background-color: #f0f0f0;
+        border-bottom: 1px solid #dcdcdc;
+    }
+
+    .duty-btn-olive {
+        background-color: #52674e;
+        border: 1px solid #435540;
+        color: #ffffff;
+        transition: background-color 160ms ease, transform 130ms ease, box-shadow 160ms ease;
+    }
+
+    .duty-btn-olive:hover {
+        background-color: #435540;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px -3px rgba(67, 85, 64, 0.38);
+    }
+
+    .duty-btn-olive:active {
+        transform: translateY(0) scale(0.985);
+    }
+
+    .duty-btn-subtle {
+        background-color: #f0f0f0;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+        transition: background-color 150ms ease, border-color 150ms ease, transform 130ms ease;
+    }
+
+    .duty-btn-subtle:hover {
+        background-color: #eef1ed;
+        border-color: #7a9176;
+        color: #1e293b;
+        transform: translateY(-1px);
+    }
+
+    .duty-btn-subtle:active {
+        transform: translateY(0) scale(0.985);
+    }
+
+    .duty-row {
+        transition: background-color 140ms ease;
+    }
+
+    .duty-row:hover td {
+        background-color: #f5f7f4;
+    }
+</style>
+
+<div class="space-y-5">
+
+    <!-- Breadcrumb Trail & Quick Export Actions -->
+    <div class="duty-panel cms-breadcrumb flex flex-wrap items-center justify-between gap-2">
+        <div>
+            <a href="{% url 'dashboard' %}" class="text-[#52674e] hover:underline font-semibold">Home</a>
+            <span class="mx-1.5 text-slate-400">/</span>
+            <span>Exams</span>
+            <span class="mx-1.5 text-slate-400">/</span>
+            <span class="text-slate-700 font-semibold">Exam Duties</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'export_roster_csv' %}"
+               class="duty-btn-subtle rounded-xs px-3 py-1 text-[11px] font-semibold">
+                Export CSV
+            </a>
+            <a href="{% url 'print_roster' %}" target="_blank"
+               class="duty-btn-olive rounded-xs px-3 py-1 text-[11px] font-semibold">
+                Print Sheet
+            </a>
+        </div>
     </div>
-</div>
 
-<!-- Real-time Notification Alert (WebSocket) -->
-<div id="socket-alert" class="alert alert-warning alert-dismissible fade d-none" role="alert">
-    <strong>Update!</strong>
-    <span id="socket-message"></span>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-</div>
-
-<!-- Filter Form (FR-10) -->
-<div class="card dashboard-card mb-3">
-    <div class="card-body">
-        <form method="GET" action="" class="row g-3">
-            <div class="col-md-4">
-                <input type="text" name="room" class="form-control" placeholder="Filter by Room (e.g. A-101)" value="{{ request.GET.room }}">
-            </div>
-            <div class="col-md-4">
-                <input type="date" name="date" class="form-control" value="{{ request.GET.date }}">
-            </div>
-            <div class="col-md-4">
-                <button type="submit" class="btn btn-primary w-100">Search Duties</button>
-            </div>
-        </form>
+    <!-- Section Heading -->
+    <div class="duty-panel flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-300 pb-3.5" style="animation-delay: 0.04s;">
+        <div class="flex items-center gap-2.5">
+            <span class="flex h-7 w-7 items-center justify-center rounded-xs border border-[#7a9176]/50 bg-[#eef1ed] text-[#52674e] text-xs font-bold">
+                &#9776;
+            </span>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900">My Exam Duties</h1>
+        </div>
+        <span class="inline-flex items-center gap-1.5 rounded-xs border border-[#5cb85c]/45 bg-[#5cb85c]/15 px-2.5 py-0.5 text-xs font-semibold text-[#2e6f2e]">
+            <span class="h-1.5 w-1.5 rounded-full bg-[#4cae4c]"></span>
+            Published Schedule
+        </span>
     </div>
-</div>
 
-<!-- Duties Table -->
-<div class="card dashboard-card">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover table-custom mb-0">
-                <thead>
+    <!-- Soft Info Strip -->
+    <div class="duty-panel cms-info-strip rounded-xs border border-[#7a9176]/45 bg-[#eef1ed] px-4 py-3 text-xs text-[#3b4b38] flex items-center gap-2.5" style="animation-delay: 0.08s;">
+        <span class="h-2 w-2 rounded-full bg-[#52674e] shrink-0"></span>
+        <span>Published invigilation schedule for the active academic term. Please report to the examination control office 20 minutes before duty start time.</span>
+    </div>
+
+    <!-- Summary Metadata Bar -->
+    <div class="duty-panel grid grid-cols-1 sm:grid-cols-3 gap-4" style="animation-delay: 0.12s;">
+        <div class="overflow-hidden rounded-md border border-slate-300 bg-white shadow-2xs">
+            <div class="duty-card-bar px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                Total Duties
+            </div>
+            <div class="px-4 py-3">
+                <span class="text-xl font-bold text-[#435540]">{{ duty_count|default:0 }}</span>
+            </div>
+        </div>
+
+        <div class="overflow-hidden rounded-md border border-slate-300 bg-white shadow-2xs">
+            <div class="duty-card-bar px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                Total Hours
+            </div>
+            <div class="px-4 py-3">
+                <span class="text-xl font-bold text-[#435540]">{{ total_hours|default:0 }} hrs</span>
+            </div>
+        </div>
+
+        <div class="overflow-hidden rounded-md border border-slate-300 bg-white shadow-2xs">
+            <div class="duty-card-bar px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                Roster Status
+            </div>
+            <div class="px-4 py-3">
+                <span class="inline-flex items-center gap-1.5 rounded-xs bg-[#5cb85c]/15 border border-[#5cb85c]/45 px-2.5 py-0.5 text-xs font-semibold text-[#2e6f2e]">
+                    <span class="h-1.5 w-1.5 rounded-full bg-[#4cae4c]"></span>
+                    Published
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="duty-panel rounded-md border border-slate-300 bg-white shadow-2xs overflow-hidden" style="animation-delay: 0.16s;">
+        <div class="duty-card-bar flex items-center justify-between px-4 py-2.5">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-700">Assigned Invigilation Roster</h2>
+            <span class="rounded-xs border border-[#7a9176]/40 bg-[#eef1ed] px-2 py-0.5 text-[10px] font-semibold text-[#435540]">
+                {{ duties|length }} Duties
+            </span>
+        </div>
+
+        <div class="overflow-x-auto bg-white">
+            <table class="cms-table w-full border-collapse text-xs sm:text-sm">
+                <thead class="bg-[#f5f7f4] text-[11px] font-bold uppercase tracking-wider text-slate-600">
                     <tr>
-                        <th>Date</th>
-                        <th>Time / Session</th>
-                        <th>Room</th>
-                        <th>Course Code</th>
-                        <th>Role</th>
-                        <th>Status</th>
+                        <th class="px-6 py-3.5 text-left">Date</th>
+                        <th class="px-6 py-3.5 text-left">Time Window</th>
+                        <th class="px-6 py-3.5 text-left">Room</th>
+                        <th class="px-6 py-3.5 text-left">Course</th>
+                        <th class="px-6 py-3.5 text-left">Role</th>
+                        <th class="px-6 py-3.5 text-left">Hours</th>
+                        <th class="px-6 py-3.5 text-left">Status</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-slate-200 bg-white">
                     {% for duty in duties %}
-                    <tr>
-                        <td>{{ duty.date|date:"d-M-Y" }}</td>
-                        <td>{{ duty.start_time|time:"h:i A" }} – {{ duty.end_time|time:"h:i A" }}</td>
-                        <td>{{ duty.room }}</td>
-                        <td>{{ duty.course_code }}</td>
-                        <td>{{ duty.role }}</td>
-                        <td>
-                            <span class="badge {% if duty.status == 'Confirmed' %}bg-success{% else %}bg-secondary{% endif %}">
+                    <tr class="duty-row">
+                        <td class="px-6 py-3.5 whitespace-nowrap font-medium text-slate-800">{{ duty.date }}</td>
+                        <td class="px-6 py-3.5 whitespace-nowrap font-mono text-xs text-slate-600">
+                            {{ duty.start_time|time:"H:i" }} &ndash; {{ duty.end_time|time:"H:i" }}
+                        </td>
+                        <td class="px-6 py-3.5 whitespace-nowrap">
+                            <span class="inline-flex items-center rounded-xs bg-[#eef1ed] border border-[#7a9176]/40 px-2.5 py-0.5 text-xs font-bold text-[#435540]">
+                                {{ duty.room }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-3.5 whitespace-nowrap font-semibold text-slate-900">{{ duty.course_code }}</td>
+                        <td class="px-6 py-3.5 whitespace-nowrap text-slate-700">{{ duty.role }}</td>
+                        <td class="px-6 py-3.5 whitespace-nowrap font-medium text-slate-700">{{ duty.hours }} hrs</td>
+                        <td class="px-6 py-3.5 whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1.5 rounded-xs bg-[#5cb85c]/15 border border-[#5cb85c]/45 px-2.5 py-0.5 text-[11px] font-semibold text-[#2e6f2e]">
+                                <span class="h-1.5 w-1.5 rounded-full bg-[#4cae4c]"></span>
                                 {{ duty.status }}
                             </span>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-4">No duties assigned yet.</td>
+                        <td colspan="7" class="px-6 py-10 text-center text-xs sm:text-sm text-slate-500">
+                            No published exam duties found.
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
+
 </div>
 {% endblock %}

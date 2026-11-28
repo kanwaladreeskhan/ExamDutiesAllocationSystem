@@ -110,3 +110,19 @@ class Assignment(models.Model):
 
     def __str__(self):
         return f"{self.staff} -> {self.session_room}"
+
+
+class RosterChangeLog(models.Model):
+    """Audit trail for published roster versions and replacements (FR-12, BR-06)."""
+    roster = models.ForeignKey(Roster, on_delete=models.CASCADE, related_name="change_logs")
+    changed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL
+    )
+    action = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-timestamp"]
+
+    def __str__(self):
+        return f"{self.roster} - {self.action} ({self.timestamp:%Y-%m-%d %H:%M})"

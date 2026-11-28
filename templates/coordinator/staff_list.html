@@ -1,28 +1,223 @@
 {% extends "base.html" %}
+
+{% block title %}Invigilators & Staff | ExamDuty Pro{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-  <div class="d-flex justify-content-between mb-3">
-    <h3>Staff</h3>
-    <a href="{% url 'manage:staff_add' %}" class="btn btn-primary">Add Staff</a>
-  </div>
-  <table class="table table-striped bg-white">
-    <thead><tr><th>Name</th><th>Username</th><th>Designation</th><th>Max duties</th><th></th></tr></thead>
-    <tbody>
-    {% for p in object_list %}
-      <tr>
-        <td>{{ p.user.get_full_name }}</td>
-        <td>{{ p.user.username }}</td>
-        <td>{{ p.designation }}</td>
-        <td>{{ p.max_duties }}</td>
-        <td>
-          <a href="{% url 'manage:staff_edit' p.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
-          <a href="{% url 'manage:staff_delete' p.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
-        </td>
-      </tr>
-    {% empty %}
-      <tr><td colspan="5">No staff yet.</td></tr>
-    {% endfor %}
-    </tbody>
-  </table>
+<style>
+    @keyframes staffListFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .staff-list-panel {
+        animation: staffListFadeIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+        transition: border-color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .staff-list-panel:hover {
+        border-color: #7a9176;
+        box-shadow: 0 8px 20px -10px rgba(82, 103, 78, 0.16);
+    }
+
+    .staff-card-bar {
+        background-color: #f0f0f0;
+        border-bottom: 1px solid #dcdcdc;
+    }
+
+    .staff-btn-olive {
+        background-color: #52674e;
+        border: 1px solid #435540;
+        color: #ffffff;
+        transition: background-color 160ms ease, transform 130ms ease, box-shadow 160ms ease;
+    }
+
+    .staff-btn-olive:hover {
+        background-color: #435540;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px -3px rgba(67, 85, 64, 0.38);
+    }
+
+    .staff-btn-olive:active {
+        transform: translateY(0) scale(0.985);
+    }
+
+    .staff-btn-edit {
+        background-color: #f0f0f0;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+        transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+    }
+
+    .staff-btn-edit:hover {
+        background-color: #eef1ed;
+        border-color: #7a9176;
+        color: #435540;
+    }
+
+    .staff-btn-delete {
+        background-color: rgba(217, 83, 79, 0.08);
+        border: 1px solid rgba(217, 83, 79, 0.4);
+        color: #b52b27;
+        transition: background-color 150ms ease, color 150ms ease;
+    }
+
+    .staff-btn-delete:hover {
+        background-color: #d9534f;
+        color: #ffffff;
+    }
+
+    .staff-row {
+        transition: background-color 140ms ease;
+    }
+
+    .staff-row:hover td {
+        background-color: #f5f7f4;
+    }
+</style>
+
+<div class="space-y-5">
+
+    <!-- CMS Breadcrumb -->
+    <div class="staff-list-panel cms-breadcrumb flex items-center justify-between">
+        <div>
+            <a href="{% url 'coordinator' %}" class="font-semibold text-[#52674e] hover:underline">Home</a>
+            <span class="mx-1.5 text-slate-400">/</span>
+            <span>Exam &amp; Resource Mgmt</span>
+            <span class="mx-1.5 text-slate-400">/</span>
+            <span class="font-semibold text-slate-700">Invigilators &amp; Staff</span>
+        </div>
+        <span class="rounded-xs border border-[#7a9176]/40 bg-[#eef1ed] px-2.5 py-0.5 text-[11px] font-bold text-[#435540]">
+            FR-02
+        </span>
+    </div>
+
+    <!-- Page Header -->
+    <div class="staff-list-panel flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-300 pb-3.5" style="animation-delay: 0.04s;">
+        <div>
+            <div class="flex items-center gap-2.5">
+                <span class="flex h-7 w-7 items-center justify-center rounded-xs border border-[#7a9176]/50 bg-[#eef1ed] text-[#52674e] text-xs font-bold">
+                    &#128101;
+                </span>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900">Invigilators &amp; Staff</h1>
+                <span class="inline-flex items-center rounded-xs bg-[#eef1ed] border border-[#7a9176]/45 px-2.5 py-0.5 text-xs font-semibold text-[#435540]">
+                    FR-02
+                </span>
+            </div>
+            <p class="mt-1 text-xs sm:text-sm text-slate-600">
+                Manage faculty profiles, academic designations, and maximum duty caps.
+            </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <a href="{% url 'manage:staff_add' %}"
+               class="staff-btn-olive inline-flex items-center gap-1.5 rounded-xs px-4 py-2 text-xs font-semibold">
+                + Add Staff Profile
+            </a>
+        </div>
+    </div>
+
+    <!-- Live Filter Bar -->
+    <div class="staff-list-panel overflow-hidden rounded-md border border-slate-300 bg-white shadow-2xs" style="animation-delay: 0.08s;">
+        <div class="staff-card-bar flex items-center justify-between px-4 py-2 text-xs font-semibold text-slate-700">
+            <span>Filter Faculty Profiles</span>
+            <span class="text-[11px] text-slate-500">Live Search</span>
+        </div>
+        <div class="p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="relative w-full sm:w-80">
+                <input type="text" id="staffSearch" onkeyup="filterStaff()"
+                       placeholder="Search by name, username, or designation..."
+                       class="w-full rounded-xs border border-slate-300 bg-white pl-3.5 pr-4 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-[#52674e] focus:outline-none transition">
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-600">
+                <span>Active Faculty Profiles: <strong class="text-[#435540]">{{ object_list|length }}</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Staff Directory Table -->
+    <div class="staff-list-panel rounded-md border border-slate-300 bg-white shadow-2xs overflow-hidden" style="animation-delay: 0.12s;">
+        <div class="staff-card-bar flex items-center justify-between px-4 py-2.5">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-700">Invigilator Directory</h2>
+            <span class="rounded-xs border border-[#7a9176]/40 bg-[#eef1ed] px-2 py-0.5 text-[10px] font-semibold text-[#435540]">
+                {{ object_list|length }} Profiles
+            </span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table id="staffTable" class="cms-table min-w-full divide-y divide-slate-200 text-xs sm:text-sm">
+                <thead class="bg-[#f5f7f4] text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                    <tr>
+                        <th class="px-6 py-3.5 text-left">Faculty Member</th>
+                        <th class="px-6 py-3.5 text-left">Username</th>
+                        <th class="px-6 py-3.5 text-left">Designation</th>
+                        <th class="px-6 py-3.5 text-left">Max Duties Cap</th>
+                        <th class="px-6 py-3.5 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 bg-white">
+                    {% for p in object_list %}
+                    <tr class="staff-row">
+                        <td class="px-6 py-3.5 whitespace-nowrap">
+                            <div class="flex items-center gap-3">
+                                <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#eef1ed] border border-[#7a9176]/45 text-[#435540] text-xs font-bold">
+                                    {{ p.user.get_full_name|default:p.user.username|slice:":1"|upper }}
+                                </span>
+                                <span class="font-semibold text-slate-900">
+                                    {{ p.user.get_full_name|default:p.user.username }}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-3.5 whitespace-nowrap font-mono text-xs text-slate-500">
+                            @{{ p.user.username }}
+                        </td>
+                        <td class="px-6 py-3.5 whitespace-nowrap">
+                            <span class="inline-flex items-center rounded-xs bg-[#f5f7f4] border border-slate-300 px-2.5 py-0.5 text-xs font-medium text-slate-700">
+                                {{ p.designation|default:"Invigilator" }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-3.5 whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1.5 rounded-xs bg-[#5cb85c]/15 border border-[#5cb85c]/45 px-2.5 py-0.5 text-xs font-semibold text-[#2e6f2e]">
+                                <span class="h-1.5 w-1.5 rounded-full bg-[#4cae4c]"></span>
+                                {{ p.max_duties }} Duties Max
+                            </span>
+                        </td>
+                        <td class="px-6 py-3.5 whitespace-nowrap text-right space-x-2">
+                            <a href="{% url 'manage:staff_edit' p.pk %}"
+                               class="staff-btn-edit inline-flex items-center rounded-xs px-3 py-1 text-xs font-semibold">
+                                Edit
+                            </a>
+                            <a href="{% url 'manage:staff_delete' p.pk %}"
+                               class="staff-btn-delete inline-flex items-center rounded-xs px-3 py-1 text-xs font-semibold">
+                                Delete
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-10 text-center text-xs sm:text-sm text-slate-500">
+                            No staff profiles configured yet. Click <strong>+ Add Staff Profile</strong> to add one.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
+
+<script>
+function filterStaff() {
+    const query = document.getElementById('staffSearch').value.toLowerCase();
+    document.querySelectorAll('#staffTable .staff-row').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
+    });
+}
+</script>
 {% endblock %}

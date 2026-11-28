@@ -1,26 +1,208 @@
 {% extends "base.html" %}
+
+{% block title %}Examination Rooms | ExamDuty Pro{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-  <div class="d-flex justify-content-between mb-3">
-    <h3>Rooms</h3>
-    <a href="{% url 'manage:room_add' %}" class="btn btn-primary">Add Room</a>
-  </div>
-  <table class="table table-striped bg-white">
-    <thead><tr><th>Name</th><th>Capacity</th><th></th></tr></thead>
-    <tbody>
-    {% for room in object_list %}
-      <tr>
-        <td>{{ room.name }}</td>
-        <td>{{ room.capacity }}</td>
-        <td>
-          <a href="{% url 'manage:room_edit' room.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
-          <a href="{% url 'manage:room_delete' room.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
-        </td>
-      </tr>
-    {% empty %}
-      <tr><td colspan="3">No rooms yet.</td></tr>
-    {% endfor %}
-    </tbody>
-  </table>
+<style>
+    @keyframes roomListFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .room-list-panel {
+        animation: roomListFadeIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+        transition: border-color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .room-list-panel:hover {
+        border-color: #7a9176;
+        box-shadow: 0 8px 20px -10px rgba(82, 103, 78, 0.16);
+    }
+
+    .room-card-bar {
+        background-color: #f0f0f0;
+        border-bottom: 1px solid #dcdcdc;
+    }
+
+    .room-btn-olive {
+        background-color: #52674e;
+        border: 1px solid #435540;
+        color: #ffffff;
+        transition: background-color 160ms ease, transform 130ms ease, box-shadow 160ms ease;
+    }
+
+    .room-btn-olive:hover {
+        background-color: #435540;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px -3px rgba(67, 85, 64, 0.38);
+    }
+
+    .room-btn-olive:active {
+        transform: translateY(0) scale(0.985);
+    }
+
+    .room-btn-edit {
+        background-color: #f0f0f0;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+        transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+    }
+
+    .room-btn-edit:hover {
+        background-color: #eef1ed;
+        border-color: #7a9176;
+        color: #435540;
+    }
+
+    .room-btn-delete {
+        background-color: rgba(217, 83, 79, 0.08);
+        border: 1px solid rgba(217, 83, 79, 0.4);
+        color: #b52b27;
+        transition: background-color 150ms ease, color 150ms ease;
+    }
+
+    .room-btn-delete:hover {
+        background-color: #d9534f;
+        color: #ffffff;
+    }
+
+    .room-row {
+        transition: background-color 140ms ease;
+    }
+
+    .room-row:hover td {
+        background-color: #f5f7f4;
+    }
+</style>
+
+<div class="space-y-5">
+
+    <!-- CMS Breadcrumb -->
+    <div class="room-list-panel cms-breadcrumb flex items-center justify-between">
+        <div>
+            <a href="{% url 'coordinator' %}" class="font-semibold text-[#52674e] hover:underline">Home</a>
+            <span class="mx-1.5 text-slate-400">/</span>
+            <span>Exam &amp; Resource Mgmt</span>
+            <span class="mx-1.5 text-slate-400">/</span>
+            <span class="font-semibold text-slate-700">Examination Rooms</span>
+        </div>
+        <span class="rounded-xs border border-[#7a9176]/40 bg-[#eef1ed] px-2.5 py-0.5 text-[11px] font-bold text-[#435540]">
+            FR-04
+        </span>
+    </div>
+
+    <!-- Page Header -->
+    <div class="room-list-panel flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-300 pb-3.5" style="animation-delay: 0.04s;">
+        <div>
+            <div class="flex items-center gap-2.5">
+                <span class="flex h-7 w-7 items-center justify-center rounded-xs border border-[#7a9176]/50 bg-[#eef1ed] text-[#52674e] text-xs font-bold">
+                    &#127979;
+                </span>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900">Examination Rooms</h1>
+                <span class="inline-flex items-center rounded-xs bg-[#eef1ed] border border-[#7a9176]/45 px-2.5 py-0.5 text-xs font-semibold text-[#435540]">
+                    FR-04
+                </span>
+            </div>
+            <p class="mt-1 text-xs sm:text-sm text-slate-600">
+                Manage exam venues and student seating capacities across campus.
+            </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <a href="{% url 'manage:room_add' %}"
+               class="room-btn-olive inline-flex items-center gap-1.5 rounded-xs px-4 py-2 text-xs font-semibold">
+                + Add Examination Room
+            </a>
+        </div>
+    </div>
+
+    <!-- Live Filter Bar -->
+    <div class="room-list-panel overflow-hidden rounded-md border border-slate-300 bg-white shadow-2xs" style="animation-delay: 0.08s;">
+        <div class="room-card-bar flex items-center justify-between px-4 py-2 text-xs font-semibold text-slate-700">
+            <span>Filter Examination Venues</span>
+            <span class="text-[11px] text-slate-500">Live Search</span>
+        </div>
+        <div class="p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="relative w-full sm:w-80">
+                <input type="text" id="roomSearch" onkeyup="filterRooms()"
+                       placeholder="Search by room name or capacity..."
+                       class="w-full rounded-xs border border-slate-300 bg-white pl-3.5 pr-4 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-[#52674e] focus:outline-none transition">
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-600">
+                <span>Total Venues: <strong class="text-[#435540]">{{ object_list|length }}</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rooms Table -->
+    <div class="room-list-panel rounded-md border border-slate-300 bg-white shadow-2xs overflow-hidden" style="animation-delay: 0.12s;">
+        <div class="room-card-bar flex items-center justify-between px-4 py-2.5">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-700">Configured Examination Rooms</h2>
+            <span class="rounded-xs border border-[#7a9176]/40 bg-[#eef1ed] px-2 py-0.5 text-[10px] font-semibold text-[#435540]">
+                {{ object_list|length }} Venues
+            </span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table id="roomsTable" class="cms-table min-w-full divide-y divide-slate-200 text-xs sm:text-sm">
+                <thead class="bg-[#f5f7f4] text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                    <tr>
+                        <th class="px-6 py-3.5 text-left">Room Identifier</th>
+                        <th class="px-6 py-3.5 text-left">Seating Capacity</th>
+                        <th class="px-6 py-3.5 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 bg-white">
+                    {% for room in object_list %}
+                    <tr class="room-row">
+                        <td class="px-6 py-3.5 whitespace-nowrap">
+                            <span class="inline-flex items-center rounded-xs bg-[#eef1ed] border border-[#7a9176]/40 px-3 py-1 text-xs font-bold text-[#435540]">
+                                {{ room.name }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-3.5 whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1.5 rounded-xs bg-[#5cb85c]/15 border border-[#5cb85c]/45 px-2.5 py-0.5 text-xs font-semibold text-[#2e6f2e]">
+                                <span class="h-1.5 w-1.5 rounded-full bg-[#4cae4c]"></span>
+                                {{ room.capacity }} Students
+                            </span>
+                        </td>
+                        <td class="px-6 py-3.5 whitespace-nowrap text-right space-x-2">
+                            <a href="{% url 'manage:room_edit' room.pk %}"
+                               class="room-btn-edit inline-flex items-center rounded-xs px-3 py-1 text-xs font-semibold">
+                                Edit
+                            </a>
+                            <a href="{% url 'manage:room_delete' room.pk %}"
+                               class="room-btn-delete inline-flex items-center rounded-xs px-3 py-1 text-xs font-semibold">
+                                Delete
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="px-6 py-10 text-center text-xs sm:text-sm text-slate-500">
+                            No examination rooms configured yet. Click <strong>+ Add Examination Room</strong> to add one.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
+
+<script>
+function filterRooms() {
+    const query = document.getElementById('roomSearch').value.toLowerCase();
+    document.querySelectorAll('#roomsTable .room-row').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
+    });
+}
+</script>
 {% endblock %}

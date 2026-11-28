@@ -1,89 +1,714 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block title %}Coordinator Dashboard | ExamDuty Pro{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="mb-0">Coordinator Dashboard</h3>
-</div>
+<style>
+    /* ==========================================================================
+       ExamDuty Pro - Coordinator Dashboard Styling
+       Theme: Bahria University Olive-Sage (#52674e / #647b60 / #7a9176 / #eef1ed)
+       Accents: CMS Green (#5cb85c / #4cae4c) & Coral Red (#d9534f)
+       ========================================================================== */
 
-<!-- Data management links -->
-<div class="mb-4">
-  <a href="{% url 'manage:staff_list' %}" class="btn btn-outline-primary me-2 mb-2">Staff</a>
-  <a href="{% url 'manage:availability_list' %}" class="btn btn-outline-primary me-2 mb-2">Availability</a>
-  <a href="{% url 'manage:room_list' %}" class="btn btn-outline-primary me-2 mb-2">Rooms</a>
-  <a href="{% url 'manage:session_list' %}" class="btn btn-outline-primary me-2 mb-2">Exam Sessions</a>
-  <a href="{% url 'manage:assignment_list' %}" class="btn btn-outline-primary mb-2">Assignments</a>
-</div>
+    :root {
+        --ed-sage-dark: #435540;
+        --ed-sage-primary: #52674e;
+        --ed-sage-mid: #647b60;
+        --ed-sage-light: #7a9176;
+        --ed-sage-tint: #eef1ed;
+        --ed-sage-soft: #f5f7f4;
+        --ed-bar-bg: #f0f0f0;
+        --ed-bar-border: #dcdcdc;
+        --ed-green: #5cb85c;
+        --ed-green-hover: #4cae4c;
+        --ed-red: #d9534f;
+    }
 
-<!-- Success / Info Messages -->
-{% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    @keyframes edPanelReveal {
+        0% {
+            opacity: 0;
+            transform: translateY(10px) scale(0.992);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes edBannerSlide {
+        0% {
+            opacity: 0;
+            transform: translateY(-6px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes edPulseDot {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.55;
+            transform: scale(1.22);
+        }
+    }
+
+    .ed-reveal {
+        animation: edPanelReveal 0.36s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .ed-banner-anim {
+        animation: edBannerSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .ed-live-dot {
+        animation: edPulseDot 2.2s ease-in-out infinite;
+    }
+
+    .ed-card {
+        background-color: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 0.375rem;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+                    box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1),
+                    border-color 180ms ease;
+    }
+
+    .ed-card:hover {
+        transform: translateY(-2px);
+        border-color: var(--ed-sage-light);
+        box-shadow: 0 10px 22px -10px rgba(67, 85, 64, 0.18);
+    }
+
+    .ed-card-header {
+        background-color: var(--ed-bar-bg);
+        border-bottom: 1px solid var(--ed-bar-border);
+        padding: 0.625rem 1rem;
+    }
+
+    .ed-btn-olive {
+        background-color: var(--ed-sage-primary);
+        border: 1px solid var(--ed-sage-dark);
+        color: #ffffff;
+        transition: background-color 160ms ease, transform 130ms ease, box-shadow 160ms ease;
+    }
+
+    .ed-btn-olive:hover {
+        background-color: var(--ed-sage-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 5px 12px -4px rgba(67, 85, 64, 0.38);
+    }
+
+    .ed-btn-olive:active {
+        transform: translateY(0) scale(0.985);
+    }
+
+    .ed-btn-green {
+        background-color: var(--ed-green);
+        border: 1px solid var(--ed-green-hover);
+        color: #ffffff;
+        transition: background-color 160ms ease, transform 130ms ease, box-shadow 160ms ease;
+    }
+
+    .ed-btn-green:hover {
+        background-color: var(--ed-green-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 5px 12px -4px rgba(76, 174, 76, 0.42);
+    }
+
+    .ed-btn-green:active {
+        transform: translateY(0) scale(0.985);
+    }
+
+    .ed-btn-subtle {
+        background-color: var(--ed-bar-bg);
+        border: 1px solid #cbd5e1;
+        color: #334155;
+        transition: background-color 150ms ease, border-color 150ms ease, transform 130ms ease;
+    }
+
+    .ed-btn-subtle:hover {
+        background-color: var(--ed-sage-tint);
+        border-color: var(--ed-sage-light);
+        color: #1e293b;
+        transform: translateY(-1px);
+    }
+
+    .ed-btn-subtle:active {
+        transform: translateY(0) scale(0.985);
+    }
+
+    .ed-pill-nav {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        border-radius: 0.25rem;
+        border: 1px solid #cbd5e1;
+        background-color: #ffffff;
+        padding: 0.375rem 0.7rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #334155;
+        transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 130ms ease;
+    }
+
+    .ed-pill-nav:hover {
+        background-color: var(--ed-sage-tint);
+        border-color: var(--ed-sage-light);
+        color: var(--ed-sage-dark);
+        transform: translateY(-1px);
+    }
+
+    .ed-table th {
+        background-color: var(--ed-sage-soft);
+        color: #475569;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 0.75rem 1.25rem;
+        border-bottom: 1px solid #cbd5e1;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .ed-table td {
+        padding: 0.75rem 1.25rem;
+        font-size: 0.78rem;
+        color: #334155;
+        border-bottom: 1px solid #e2e8f0;
+        transition: background-color 140ms ease;
+    }
+
+    .ed-table tbody tr:hover td {
+        background-color: var(--ed-sage-soft);
+    }
+
+    .ed-progress-track {
+        width: 100%;
+        height: 0.45rem;
+        background-color: #e2e8f0;
+        border-radius: 9999px;
+        overflow: hidden;
+    }
+
+    .ed-progress-fill-green {
+        height: 100%;
+        background-color: var(--ed-green);
+        border-radius: 9999px;
+        transition: width 550ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .ed-progress-fill-olive {
+        height: 100%;
+        background-color: var(--ed-sage-primary);
+        border-radius: 9999px;
+        transition: width 550ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+</style>
+
+<div class="space-y-6">
+
+    <!-- ======================================================================
+         1. CMS Breadcrumb & Roster Snapshot Ribbon
+         ====================================================================== -->
+    <div class="ed-reveal cms-breadcrumb flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center flex-wrap gap-1">
+            <a href="{% url 'coordinator' %}" class="font-semibold text-[#52674e] hover:underline">Home</a>
+            <span class="mx-1 text-slate-400">/</span>
+            <span>Examination Operations</span>
+            <span class="mx-1 text-slate-400">/</span>
+            <span class="font-semibold text-slate-700">Coordinator Dashboard</span>
         </div>
-    {% endfor %}
-{% endif %}
 
-<div class="row g-4">
-    <!-- Generate Roster Card -->
-    <div class="col-md-4">
-        <div class="card dashboard-card h-100">
-            <div class="card-body text-center">
-                <h5 class="card-title">Generate Roster</h5>
-                <p class="card-text text-muted">Automatically allocate exam duties to staff members.</p>
-                <form method="POST" action="{% url 'generate_roster' %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-primary w-100">
-                        Generate Roster
+        <div class="flex items-center gap-2">
+            {% if latest_roster %}
+                <span class="inline-flex items-center gap-1.5 rounded-xs px-2.5 py-0.5 text-[11px] font-semibold border
+                    {% if latest_roster.status == 'PUBLISHED' %}
+                        bg-[#5cb85c]/15 text-[#2e6f2e] border-[#5cb85c]/45
+                    {% else %}
+                        bg-amber-50 text-amber-800 border-amber-300
+                    {% endif %}">
+                    <span class="ed-live-dot h-1.5 w-1.5 rounded-full
+                        {% if latest_roster.status == 'PUBLISHED' %}bg-[#4cae4c]{% else %}bg-amber-500{% endif %}"></span>
+                    Roster v{{ latest_roster.version }} &bull; {{ latest_roster.get_status_display }}
+                </span>
+            {% else %}
+                <span class="inline-flex items-center gap-1.5 rounded-xs border border-slate-300 bg-white px-2.5 py-0.5 text-[11px] font-medium text-slate-600">
+                    No Active Snapshot
+                </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ======================================================================
+         2. Page Header & Quick Data Management Navigation Bar
+         ====================================================================== -->
+    <div class="ed-reveal flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 border-b border-slate-300 pb-4" style="animation-delay: 0.04s;">
+        <div class="flex items-start gap-3">
+            <div class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xs border border-[#7a9176]/50 bg-[#eef1ed] text-[#52674e] text-base font-bold shadow-2xs">
+                &#128421;
+            </div>
+            <div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <h1 class="text-2xl font-bold tracking-tight text-slate-900">Coordinator Dashboard</h1>
+                    {% if latest_roster %}
+                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border
+                            {% if latest_roster.status == 'PUBLISHED' %}
+                                bg-[#5cb85c]/15 text-[#2e6f2e] border-[#5cb85c]/45
+                            {% else %}
+                                bg-amber-50 text-amber-800 border-amber-300
+                            {% endif %}">
+                            Roster v{{ latest_roster.version }} &bull; {{ latest_roster.get_status_display }}
+                        </span>
+                    {% endif %}
+                </div>
+                <p class="mt-1 text-xs sm:text-sm text-slate-600">
+                    Manage exam schedules, run automatic duty allocation, and publish real-time rosters.
+                </p>
+            </div>
+        </div>
+
+        <!-- Quick Data Management Pills -->
+        <div class="flex flex-wrap items-center gap-1.5">
+            <a href="{% url 'manage:staff_list' %}" class="ed-pill-nav">
+                <span class="h-1.5 w-1.5 rounded-full bg-[#52674e]"></span>
+                <span>Staff</span>
+            </a>
+            <a href="{% url 'manage:availability_list' %}" class="ed-pill-nav">
+                <span class="h-1.5 w-1.5 rounded-full bg-[#647b60]"></span>
+                <span>Availability</span>
+            </a>
+            <a href="{% url 'manage:room_list' %}" class="ed-pill-nav">
+                <span class="h-1.5 w-1.5 rounded-full bg-[#7a9176]"></span>
+                <span>Rooms</span>
+            </a>
+            <a href="{% url 'manage:session_list' %}" class="ed-pill-nav">
+                <span class="h-1.5 w-1.5 rounded-full bg-[#5cb85c]"></span>
+                <span>Exam Sessions</span>
+            </a>
+            <a href="{% url 'manage:assignment_list' %}" class="ed-pill-nav">
+                <span class="h-1.5 w-1.5 rounded-full bg-[#52674e]"></span>
+                <span>Replacements</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ======================================================================
+         3. Django Messages & Unfilled Slot Warnings
+         ====================================================================== -->
+    {% if messages %}
+        <div class="space-y-2">
+            {% for message in messages %}
+                <div class="ed-banner-anim rounded-xs border px-4 py-3 text-xs sm:text-sm font-medium flex items-center justify-between gap-3 shadow-2xs
+                    {% if 'warning' in message.tags %}
+                        border-amber-300 bg-amber-50 text-amber-900
+                    {% elif 'error' in message.tags %}
+                        border-[#d9534f]/45 bg-[#d9534f]/10 text-[#a92824]
+                    {% else %}
+                        border-[#5cb85c]/45 bg-[#5cb85c]/10 text-[#265e26]
+                    {% endif %}">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold">
+                            {% if 'warning' in message.tags %}&#9888;{% elif 'error' in message.tags %}&#10006;{% else %}&#10004;{% endif %}
+                        </span>
+                        <span>{{ message }}</span>
+                    </div>
+                    <button type="button"
+                            onclick="this.parentElement.remove()"
+                            class="rounded px-1.5 py-0.5 text-sm font-bold opacity-60 hover:opacity-100 hover:bg-black/5 transition"
+                            aria-label="Dismiss message">
+                        &times;
                     </button>
-                </form>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if unfilled_details %}
+    <div class="ed-card ed-banner-anim overflow-hidden border-amber-300 bg-amber-50/80">
+        <div class="flex items-center justify-between border-b border-amber-200 bg-amber-100/70 px-4 py-2">
+            <p class="text-xs font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+                <span>&#9888;</span>
+                <span>Unfilled Duty Slots Detected</span>
+            </p>
+            <span class="rounded-xs bg-amber-200/80 px-2 py-0.5 text-[10px] font-bold text-amber-900">
+                Action Required
+            </span>
+        </div>
+        <div class="p-4 text-xs text-amber-900">
+            <ul class="list-disc list-inside space-y-1 text-amber-800">
+                {% for item in unfilled_details %}
+                    <li>{{ item }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ======================================================================
+         4. KPI Summary Strip (4 Cards)
+         ====================================================================== -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- KPI 1: Active Roster -->
+        <div class="ed-card ed-reveal overflow-hidden" style="animation-delay: 0.08s;">
+            <div class="ed-card-header flex items-center justify-between">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-600">Active Roster</span>
+                <span class="rounded-xs border border-[#7a9176]/35 bg-[#eef1ed] px-1.5 py-0.5 text-[10px] font-semibold text-[#435540]">
+                    Snapshot
+                </span>
+            </div>
+            <div class="p-5">
+                <p class="text-2xl font-bold text-slate-900">
+                    {% if latest_roster %}v{{ latest_roster.version }}{% else %}None{% endif %}
+                </p>
+                <p class="mt-1 text-xs text-slate-500">
+                    {% if latest_roster %}{{ latest_roster.get_status_display }} snapshot{% else %}Click Generate Roster{% endif %}
+                </p>
+            </div>
+        </div>
+
+        <!-- KPI 2: Required Slots -->
+        <div class="ed-card ed-reveal overflow-hidden" style="animation-delay: 0.12s;">
+            <div class="ed-card-header flex items-center justify-between">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-600">Required Slots</span>
+                <span class="rounded-xs border border-slate-300 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">
+                    Demand
+                </span>
+            </div>
+            <div class="p-5">
+                <p class="text-2xl font-bold text-slate-900">{{ total_required|default:0 }}</p>
+                <p class="mt-1 text-xs text-slate-500">Across all scheduled rooms</p>
+            </div>
+        </div>
+
+        <!-- KPI 3: Assigned Duties -->
+        <div class="ed-card ed-reveal overflow-hidden" style="animation-delay: 0.16s;">
+            <div class="ed-card-header flex items-center justify-between">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-600">Assigned Duties</span>
+                <span class="rounded-xs border border-[#5cb85c]/40 bg-[#5cb85c]/15 px-1.5 py-0.5 text-[10px] font-semibold text-[#2e6f2e]">
+                    Allocated
+                </span>
+            </div>
+            <div class="p-5">
+                <p class="text-2xl font-bold text-[#4cae4c]">{{ total_assigned|default:0 }}</p>
+                <p class="mt-1 text-xs text-slate-500">Conflict-free allocations</p>
+            </div>
+        </div>
+
+        <!-- KPI 4: Unfilled Slots -->
+        <div class="ed-card ed-reveal overflow-hidden" style="animation-delay: 0.20s;">
+            <div class="ed-card-header flex items-center justify-between">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-600">Unfilled Slots</span>
+                <span class="rounded-xs border border-[#d9534f]/40 bg-[#d9534f]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[#b52b27]">
+                    Coverage
+                </span>
+            </div>
+            <div class="p-5">
+                <p class="text-2xl font-bold {% if unfilled_count > 0 %}text-[#d9534f]{% else %}text-slate-900{% endif %}">
+                    {{ unfilled_count|default:0 }}
+                </p>
+                <p class="mt-1 text-xs text-slate-500">
+                    {% if unfilled_count > 0 %}Requires staff availability{% else %}100% coverage achieved{% endif %}
+                </p>
             </div>
         </div>
     </div>
 
-    <!-- Save Draft Card -->
-    <div class="col-md-4">
-        <div class="card dashboard-card h-100">
-            <div class="card-body text-center">
-                <h5 class="card-title">Save Draft</h5>
-                <p class="card-text text-muted">Save the current roster as a draft without publishing.</p>
-                <form method="POST" action="{% url 'save_draft' %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-outline-secondary w-100">
-                        Save as Draft
-                    </button>
-                </form>
+    <!-- ======================================================================
+         5. Roster Workflow Action Cards (Generate, Save Draft, Publish)
+         ====================================================================== -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Step 1: Generate Roster -->
+        <div class="ed-card ed-reveal overflow-hidden flex flex-col justify-between" style="animation-delay: 0.24s;">
+            <div>
+                <div class="ed-card-header flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-800">1. Generate Roster</h3>
+                    <span class="rounded-xs border border-[#7a9176]/40 bg-[#eef1ed] px-2 py-0.5 text-[10px] font-semibold text-[#435540]">
+                        Auto-Allocate
+                    </span>
+                </div>
+                <div class="p-5">
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Runs the constraint-based allocation engine to balance invigilation hours across eligible staff.
+                    </p>
+                </div>
+            </div>
+            <form method="POST" action="{% url 'generate_roster' %}" class="px-5 pb-5">
+                {% csrf_token %}
+                <button type="submit" class="ed-btn-olive w-full rounded-xs px-4 py-2 text-xs font-semibold">
+                    Generate Roster
+                </button>
+            </form>
+        </div>
+
+        <!-- Step 2: Save Draft -->
+        <div class="ed-card ed-reveal overflow-hidden flex flex-col justify-between" style="animation-delay: 0.28s;">
+            <div>
+                <div class="ed-card-header flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-800">2. Save Draft</h3>
+                    <span class="rounded-xs border border-slate-300 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                        Versioning
+                    </span>
+                </div>
+                <div class="p-5">
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Saves current draft or clones a published roster into a new editable draft version for review.
+                    </p>
+                </div>
+            </div>
+            <form method="POST" action="{% url 'save_draft' %}" class="px-5 pb-5">
+                {% csrf_token %}
+                <button type="submit" class="ed-btn-subtle w-full rounded-xs px-4 py-2 text-xs font-semibold">
+                    Save as Draft
+                </button>
+            </form>
+        </div>
+
+        <!-- Step 3: Publish Roster -->
+        <div class="ed-card ed-reveal overflow-hidden flex flex-col justify-between" style="animation-delay: 0.32s;">
+            <div>
+                <div class="ed-card-header flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-800">3. Publish Roster</h3>
+                    <span class="rounded-xs border border-[#5cb85c]/45 bg-[#5cb85c]/15 px-2 py-0.5 text-[10px] font-semibold text-[#2e6f2e]">
+                        Live WebSocket
+                    </span>
+                </div>
+                <div class="p-5">
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Publishes the official roster snapshot and pushes instant WebSocket alerts to all staff dashboards.
+                    </p>
+                </div>
+            </div>
+            <form method="POST" action="{% url 'publish_roster' %}" class="px-5 pb-5">
+                {% csrf_token %}
+                <button type="submit" class="ed-btn-green w-full rounded-xs px-4 py-2 text-xs font-semibold">
+                    Publish Roster
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ======================================================================
+         6. Interactive Workload & Slot Coverage Analytics
+         ====================================================================== -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <!-- Staff Workload & Duty Distribution -->
+        <div class="ed-card ed-reveal lg:col-span-2 overflow-hidden" style="animation-delay: 0.36s;">
+            <div class="ed-card-header flex items-center justify-between gap-2">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800">Staff Workload &amp; Duty Distribution</h3>
+                    <p class="text-[11px] text-slate-500">Comparison of assigned duty count and total invigilation hours per staff member</p>
+                </div>
+                <span class="rounded-xs border border-[#7a9176]/35 bg-[#eef1ed] px-2 py-0.5 text-[10px] font-semibold text-[#435540]">
+                    Workload Analytics
+                </span>
+            </div>
+            <div class="p-5">
+                <canvas id="workloadChart" height="120"></canvas>
+            </div>
+        </div>
+
+        <!-- Slot Coverage Ratio -->
+        <div class="ed-card ed-reveal overflow-hidden flex flex-col justify-between" style="animation-delay: 0.40s;">
+            <div class="ed-card-header flex items-center justify-between gap-2">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800">Slot Coverage Ratio</h3>
+                    <p class="text-[11px] text-slate-500">Filled vs. unfilled examination room slots</p>
+                </div>
+            </div>
+            <div class="p-5 flex-1 flex flex-col justify-between">
+                <div class="max-w-[225px] mx-auto w-full my-auto">
+                    <canvas id="coverageChart"></canvas>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600">
+                    <span class="inline-flex items-center gap-1.5">
+                        <span class="h-2.5 w-2.5 rounded-full bg-[#5cb85c]"></span>
+                        Filled: <strong class="text-[#2e6f2e]">{{ total_assigned|default:0 }}</strong>
+                    </span>
+                    <span class="inline-flex items-center gap-1.5">
+                        <span class="h-2.5 w-2.5 rounded-full bg-[#d9534f]"></span>
+                        Unfilled: <strong class="text-[#b52b27]">{{ unfilled_count|default:0 }}</strong>
+                    </span>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Publish Roster Card -->
-    <div class="col-md-4">
-        <div class="card dashboard-card h-100">
-            <div class="card-body text-center">
-                <h5 class="card-title">Publish Roster</h5>
-                <p class="card-text text-muted">Publish the roster and notify all staff in real-time.</p>
-                <form method="POST" action="{% url 'publish_roster' %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-success w-100">
-                        Publish Roster
-                    </button>
-                </form>
+    <!-- ======================================================================
+         7. Audit Change Log (FR-12)
+         ====================================================================== -->
+    <div class="ed-card ed-reveal overflow-hidden" style="animation-delay: 0.44s;">
+        <div class="ed-card-header flex flex-wrap items-center justify-between gap-2">
+            <div>
+                <h3 class="text-sm font-bold text-slate-800">Roster Audit &amp; Change Log</h3>
+                <p class="text-[11px] text-slate-500">Immutable history of draft generation, publishing, and staff replacements</p>
             </div>
+            <span class="rounded-xs border border-[#7a9176]/40 bg-[#eef1ed] px-2.5 py-0.5 text-[10px] font-bold text-[#435540]">
+                FR-12 Audit Trail
+            </span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="ed-table min-w-full border-collapse">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Version</th>
+                        <th>Actor</th>
+                        <th>Action Recorded</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in change_logs %}
+                    <tr>
+                        <td class="whitespace-nowrap font-mono text-xs text-slate-500">
+                            {{ log.timestamp|date:"Y-m-d H:i" }}
+                        </td>
+                        <td class="whitespace-nowrap">
+                            <span class="inline-flex items-center rounded-xs border border-[#7a9176]/35 bg-[#eef1ed] px-2 py-0.5 text-[11px] font-semibold text-[#435540]">
+                                v{{ log.roster.version }}
+                            </span>
+                        </td>
+                        <td class="whitespace-nowrap font-semibold text-slate-900">
+                            {{ log.changed_by.username|default:"System" }}
+                        </td>
+                        <td class="text-slate-600">
+                            {{ log.action }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="py-8 text-center text-xs text-slate-500">
+                            No roster actions recorded yet. Click <strong>Generate Roster</strong> above to start.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
+
 </div>
 
-<!-- Quick Info / Instructions Section -->
-<div class="card dashboard-card mt-4">
-    <div class="card-body">
-        <h5 class="card-title">Instructions</h5>
-        <ul class="mb-0">
-            <li><strong>Generate Roster</strong> &rarr; Executes the allocation algorithm to assign invigilation duties (currently a placeholder).</li>
-            <li><strong>Save Draft</strong> &rarr; Saves the current roster as a draft for review and further modifications.</li>
-            <li><strong>Publish Roster</strong> &rarr; Publishes the final roster and triggers real-time WebSocket notifications to all staff members.</li>
-        </ul>
-    </div>
-</div>
+<!-- ==========================================================================
+     8. Chart.js Data Payload & Initialization
+     ========================================================================== -->
+<script id="chart-data" type="application/json">
+{
+    "labels": {{ chart_labels_json|default:"[]"|safe }},
+    "counts": {{ chart_counts_json|default:"[]"|safe }},
+    "hours": {{ chart_hours_json|default:"[]"|safe }},
+    "assigned": {{ total_assigned|default:0 }},
+    "unfilled": {{ unfilled_count|default:0 }}
+}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+(function() {
+    const rawChartData = document.getElementById('chart-data');
+    if (!rawChartData || typeof Chart === 'undefined') return;
+
+    const chartData = JSON.parse(rawChartData.textContent);
+
+    const workloadCanvas = document.getElementById('workloadChart');
+    if (workloadCanvas) {
+        new Chart(workloadCanvas, {
+            type: 'bar',
+            data: {
+                labels: chartData.labels,
+                datasets: [
+                    {
+                        label: 'Assigned Duties',
+                        data: chartData.counts,
+                        backgroundColor: '#52674e',
+                        borderColor: '#435540',
+                        borderWidth: 1,
+                        borderRadius: 3
+                    },
+                    {
+                        label: 'Total Hours',
+                        data: chartData.hours,
+                        backgroundColor: '#5cb85c',
+                        borderColor: '#4cae4c',
+                        borderWidth: 1,
+                        borderRadius: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                animation: {
+                    duration: 750,
+                    easing: 'easeOutQuart'
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#334155',
+                            font: { size: 11, weight: '600' },
+                            usePointStyle: true,
+                            pointStyle: 'rectRounded'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#e2e8f0' },
+                        ticks: { color: '#475569', font: { size: 11 } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#475569', font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    const coverageCanvas = document.getElementById('coverageChart');
+    if (coverageCanvas) {
+        new Chart(coverageCanvas, {
+            type: 'doughnut',
+            data: {
+                labels: ['Filled Slots', 'Unfilled Slots'],
+                datasets: [{
+                    data: [chartData.assigned, chartData.unfilled],
+                    backgroundColor: ['#5cb85c', '#d9534f'],
+                    borderColor: '#ffffff',
+                    borderWidth: 2,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '70%',
+                animation: {
+                    duration: 800,
+                    easing: 'easeOutQuart'
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#334155',
+                            font: { size: 11, weight: '600' },
+                            usePointStyle: true
+                        }
+                    }
+                }
+            }
+        });
+    }
+})();
+</script>
 {% endblock %}

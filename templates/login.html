@@ -1,11 +1,139 @@
-{% extends "base.html" %}
-{% block content %}
-<div class="container" style="max-width:420px; margin-top:60px;">
-  <h3 class="mb-3">Login</h3>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary w-100">Login</button>
-  </form>
+{% extends 'base.html' %}
+
+{% block title %}Sign In | ExamDuty Pro{% endblock %}
+
+{% block unauth_content %}
+<style>
+    @keyframes loginCardReveal {
+        from {
+            opacity: 0;
+            transform: translateY(10px) scale(0.99);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .login-panel {
+        animation: loginCardReveal 0.36s cubic-bezier(0.16, 1, 0.3, 1) both;
+        transition: border-color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .login-panel:hover {
+        border-color: #7a9176;
+        box-shadow: 0 12px 24px -10px rgba(67, 85, 64, 0.2);
+    }
+
+    .login-card-bar {
+        background-color: #f0f0f0;
+        border-bottom: 1px solid #dcdcdc;
+    }
+
+    .login-btn-olive {
+        background-color: #52674e;
+        border: 1px solid #435540;
+        color: #ffffff;
+        transition: background-color 160ms ease, transform 130ms ease, box-shadow 160ms ease;
+    }
+
+    .login-btn-olive:hover {
+        background-color: #435540;
+        transform: translateY(-1px);
+        box-shadow: 0 5px 12px -3px rgba(67, 85, 64, 0.4);
+    }
+
+    .login-btn-olive:active {
+        transform: translateY(0) scale(0.985);
+    }
+</style>
+
+<div class="min-h-screen flex flex-col justify-between bg-[#eef1ed] text-slate-900">
+    <!-- Top Olive-Sage Accent Line -->
+    <div class="h-1.5 w-full bg-[#52674e]"></div>
+
+    <!-- Centered Login Card -->
+    <main class="flex flex-1 items-center justify-center px-4 py-12">
+        <div class="login-panel w-full max-w-md rounded-md border border-slate-300 bg-white shadow-2xs overflow-hidden">
+
+            <!-- Card Top Status Strip -->
+            <div class="login-card-bar flex items-center justify-between px-6 py-3 text-xs">
+                <div class="flex items-center gap-2">
+                    <span class="h-2 w-2 rounded-full bg-[#5cb85c]"></span>
+                    <span class="font-bold text-slate-700">Examination Portal</span>
+                </div>
+                <span class="rounded-xs bg-[#eef1ed] border border-[#7a9176]/45 px-2.5 py-0.5 text-[11px] font-semibold text-[#435540]">
+                    Sign In
+                </span>
+            </div>
+
+            <!-- Form Body -->
+            <div class="p-7 sm:p-8">
+                <div class="mb-6">
+                    <p class="text-[11px] font-bold uppercase tracking-wider text-[#52674e]">
+                        ExamDuty Pro &bull; Bahria University
+                    </p>
+                    <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">Sign in</h1>
+                    <p class="mt-1 text-xs sm:text-sm text-slate-600">
+                        Access your coordinator or faculty invigilation schedule.
+                    </p>
+                </div>
+
+                {% if form.errors or form.non_field_errors %}
+                <div class="mb-5 rounded-xs border border-[#d9534f]/45 bg-[#d9534f]/10 px-4 py-3 text-xs font-semibold text-[#a92824]">
+                    {% if form.non_field_errors %}
+                        {{ form.non_field_errors|striptags }}
+                    {% else %}
+                        Invalid username or password. Please verify your credentials and try again.
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <form method="POST" class="space-y-4">
+                    {% csrf_token %}
+
+                    <div>
+                        <label for="id_username" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                            Username
+                        </label>
+                        <input type="text"
+                               name="username"
+                               id="id_username"
+                               value="{{ form.username.value|default:'' }}"
+                               required
+                               autofocus
+                               placeholder="Enter your username"
+                               class="w-full rounded-xs border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#52674e] focus:outline-none transition">
+                    </div>
+
+                    <div>
+                        <label for="id_password" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                            Password
+                        </label>
+                        <input type="password"
+                               name="password"
+                               id="id_password"
+                               required
+                               placeholder="Enter your password"
+                               class="w-full rounded-xs border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#52674e] focus:outline-none transition">
+                    </div>
+
+                    <button type="submit"
+                            class="login-btn-olive mt-2 w-full rounded-xs px-4 py-2.5 text-sm font-semibold">
+                        Sign In
+                    </button>
+                </form>
+
+                <div class="mt-6 pt-4 border-t border-slate-200 text-center text-xs text-slate-500">
+                    Use your assigned portal credentials to continue
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Clean Footer -->
+    <footer class="w-full border-t border-slate-300 bg-[#f5f7f4] py-4 text-center text-xs text-slate-600">
+        Exam Duties Allocation System &bull; <span class="font-semibold text-[#52674e]">Bahria University Karachi Campus</span>
+    </footer>
 </div>
 {% endblock %}

@@ -1,12 +1,126 @@
 {% extends "base.html" %}
+
+{% block title %}Delete Staff Profile | ExamDuty Pro{% endblock %}
+
 {% block content %}
-<div class="container mt-4" style="max-width:500px;">
-  <h3>Delete staff member?</h3>
-  <p>Delete <strong>{{ object }}</strong>? Their availability and assignments will be removed. The login account is kept.</p>
-  <form method="post">
-    {% csrf_token %}
-    <button class="btn btn-danger">Yes, delete</button>
-    <a href="{% url 'manage:staff_list' %}" class="btn btn-secondary">Cancel</a>
-  </form>
+<style>
+    @keyframes staffDeleteReveal {
+        from {
+            opacity: 0;
+            transform: translateY(10px) scale(0.985);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .staff-delete-panel {
+        animation: staffDeleteReveal 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+        transition: border-color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .staff-delete-panel:hover {
+        border-color: #d9534f;
+        box-shadow: 0 10px 22px -10px rgba(217, 83, 79, 0.22);
+    }
+
+    .staff-delete-bar {
+        background-color: #f0f0f0;
+        border-bottom: 1px solid #dcdcdc;
+    }
+
+    .staff-delete-btn-red {
+        background-color: #d9534f;
+        border: 1px solid #c9302c;
+        color: #ffffff;
+        transition: background-color 160ms ease, transform 130ms ease, box-shadow 160ms ease;
+    }
+
+    .staff-delete-btn-red:hover {
+        background-color: #c9302c;
+        transform: translateY(-1px);
+        box-shadow: 0 5px 12px -3px rgba(217, 83, 79, 0.42);
+    }
+
+    .staff-delete-btn-red:active {
+        transform: translateY(0) scale(0.985);
+    }
+
+    .staff-delete-btn-cancel {
+        background-color: #f0f0f0;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+        transition: background-color 150ms ease, border-color 150ms ease, transform 130ms ease;
+    }
+
+    .staff-delete-btn-cancel:hover {
+        background-color: #eef1ed;
+        border-color: #7a9176;
+        color: #1e293b;
+        transform: translateY(-1px);
+    }
+
+    .staff-delete-btn-cancel:active {
+        transform: translateY(0) scale(0.985);
+    }
+</style>
+
+<div class="max-w-md mx-auto mt-8 space-y-4">
+
+    <!-- CMS Breadcrumb -->
+    <div class="staff-delete-panel cms-breadcrumb flex items-center justify-between">
+        <div>
+            <a href="{% url 'coordinator' %}" class="font-semibold text-[#52674e] hover:underline">Home</a>
+            <span class="mx-1.5 text-slate-400">/</span>
+            <a href="{% url 'manage:staff_list' %}" class="font-semibold text-[#52674e] hover:underline">Invigilators &amp; Staff</a>
+            <span class="mx-1.5 text-slate-400">/</span>
+            <span class="font-semibold text-slate-700">Delete</span>
+        </div>
+        <span class="rounded-xs border border-[#d9534f]/40 bg-[#d9534f]/10 px-2 py-0.5 text-[10px] font-bold text-[#b52b27]">
+            Confirm
+        </span>
+    </div>
+
+    <!-- Back Link -->
+    <div class="staff-delete-panel" style="animation-delay: 0.04s;">
+        <a href="{% url 'manage:staff_list' %}"
+           class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#52674e] hover:text-[#435540] hover:underline transition">
+            &larr; Back to Invigilators &amp; Staff
+        </a>
+    </div>
+
+    <!-- Confirmation Card -->
+    <div class="staff-delete-panel rounded-md border border-[#d9534f]/50 bg-white shadow-2xs overflow-hidden text-center" style="animation-delay: 0.08s;">
+        <div class="staff-delete-bar flex items-center justify-between px-4 py-2 text-xs font-bold text-slate-700">
+            <span>Destructive Action</span>
+            <span class="rounded-xs border border-[#d9534f]/40 bg-[#d9534f]/10 px-2 py-0.5 text-[10px] text-[#b52b27]">
+                Permanent
+            </span>
+        </div>
+
+        <div class="p-7">
+            <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#d9534f]/10 border border-[#d9534f]/35 text-[#d9534f] font-bold text-lg">
+                !
+            </div>
+
+            <h1 class="text-lg font-bold tracking-tight text-slate-900">Delete Staff Profile</h1>
+            <p class="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Are you sure you want to remove <strong class="font-semibold text-slate-900">{{ object }}</strong>? Their availability records and duty assignments will be removed, while their base login account will be kept.
+            </p>
+
+            <form method="post" class="mt-6 pt-5 border-t border-slate-200 flex items-center justify-center gap-3">
+                {% csrf_token %}
+                <a href="{% url 'manage:staff_list' %}"
+                   class="staff-delete-btn-cancel rounded-xs px-4 py-2 text-xs font-semibold">
+                    Cancel
+                </a>
+                <button type="submit"
+                        class="staff-delete-btn-red rounded-xs px-5 py-2 text-xs font-semibold">
+                    Yes, Delete Profile
+                </button>
+            </form>
+        </div>
+    </div>
 </div>
 {% endblock %}

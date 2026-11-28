@@ -1,40 +1,552 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-[#eef1ed]">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exam Duties Allocation System | Bahria University</title>
+    <title>{% block title %}ExamDuty Pro | Bahria University{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        @media print { .no-print { display: none !important; } }
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes toastPop {
+            from {
+                opacity: 0;
+                transform: translateY(12px) scale(0.97);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes dropdownReveal {
+            from {
+                opacity: 0;
+                transform: translateY(-6px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .animate-page-in {
+            animation: fadeSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .animate-toast-in {
+            animation: toastPop 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .animate-dropdown-in {
+            animation: dropdownReveal 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        /* Smooth CSS grid accordion transition */
+        .nav-accordion-panel {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .nav-accordion-panel.is-open {
+            grid-template-rows: 1fr;
+        }
+        .nav-accordion-inner {
+            overflow: hidden;
+        }
+
+        .nav-chevron {
+            transition: transform 0.22s ease;
+        }
+        .nav-chevron.is-open {
+            transform: rotate(180deg);
+        }
+
+        /* CMS-style inner page components */
+        .cms-breadcrumb {
+            background-color: #f4f6f3;
+            border: 1px solid #d5ddd3;
+            border-radius: 0.25rem;
+            padding: 0.45rem 0.75rem;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .cms-box-bar {
+            background-color: #f0f0f0;
+            border-bottom: 1px solid #dcdcdc;
+        }
+
+        .cms-page-title {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding-bottom: 0.6rem;
+            border-bottom: 1px solid #cbd5e1;
+            font-size: 1.35rem;
+            font-weight: 500;
+            color: #475569;
+        }
+
+        .cms-info-strip {
+            background-color: #f6f8f5;
+            border-left: 3px solid #647b60;
+            padding: 0.65rem 0.9rem;
+            font-size: 0.8125rem;
+            color: #475569;
+        }
+
+        .cms-summary-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            padding: 0.55rem 0.25rem;
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.75rem;
+        }
+
+        .cms-table th {
+            background-color: #f5f7f4;
+            color: #334155;
+            font-weight: 700;
+            font-size: 0.72rem;
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #cbd5e1;
+            padding: 0.65rem 0.75rem;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .cms-table td {
+            padding: 0.65rem 0.75rem;
+            font-size: 0.78rem;
+            color: #334155;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background-color 140ms ease;
+        }
+
+        .cms-table tbody tr:hover td {
+            background-color: #f5f7f4;
+        }
+
+        /* Default Django form widgets styled with LMS/olive-sage accents */
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        input[type="time"],
+        input[type="email"],
+        input[type="password"],
+        select,
+        textarea {
+            width: 100%;
+            border-radius: 0.25rem;
+            border: 1px solid #cbd5e1;
+            padding: 0.48rem 0.75rem;
+            font-size: 0.875rem;
+            color: #1e293b;
+            background-color: #ffffff;
+            transition: border-color 180ms ease, box-shadow 180ms ease;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #52674e;
+            box-shadow: 0 0 0 3px rgba(100, 123, 96, 0.2);
+        }
+        input[type="checkbox"] {
+            width: 1.05rem;
+            height: 1.05rem;
+            border-radius: 0.25rem;
+            accent-color: #52674e;
+            cursor: pointer;
+        }
+    </style>
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
-        <div class="container">
-            <a class="navbar-brand fw-semibold" href="{% url 'dashboard' %}">Exam Duty System</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
+<body class="min-h-full flex bg-[#eef1ed] text-slate-800 antialiased">
+
+{% if user.is_authenticated %}
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="mobile-backdrop" onclick="toggleMobileSidebar(false)"
+         class="no-print fixed inset-0 z-40 hidden bg-slate-950/50 backdrop-blur-xs transition-opacity duration-200 lg:hidden"></div>
+
+    <!-- Left Navigation Sidebar (LMS Olive-Sage Palette + Tree Dropdowns) -->
+    <aside id="app-sidebar"
+           class="no-print fixed inset-y-0 left-0 z-50 flex w-64 -translate-x-full flex-col bg-[#5d7359] text-white border-r border-[#4b5f48] transition-transform duration-300 ease-out lg:translate-x-0">
+
+<!-- Top Portal Header -->
+        <div class="flex items-center justify-between px-4 h-14 bg-[#7a9176] text-white border-b border-[#5b7158] shadow-2xs">
+            <div class="flex items-center gap-2.5 min-w-0">
+                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#4b5f48]/70 font-bold text-xs tracking-wide border border-white/25">
+                    ED
+                </div>
+                <div class="truncate">
+                    <p class="truncate text-sm font-semibold tracking-tight leading-none">ExamDuty</p>
+                    <p class="mt-0.5 truncate text-[10px] font-medium text-white/85">Bahria University</p>
+                </div>
+            </div>
+            <button type="button" onclick="toggleMobileSidebar(false)"
+                    class="lg:hidden rounded px-2 py-1 text-sm font-bold text-white hover:bg-[#4b5f48] transition"
+                    aria-label="Close menu">
+                &times;
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">Logout</a>
-                    </li>
-                </ul>
+        </div>
+
+        <!-- Collapsible CMS-Style Menu -->
+        <nav class="flex-1 overflow-y-auto divide-y divide-[#4b5f48]/60 text-[13px] font-medium">
+            {% if user.role == 'COORDINATOR' %}
+
+                <!-- Single Item: Dashboard -->
+                <a href="{% url 'coordinator' %}"
+                   class="flex items-center justify-between px-3.5 py-2.5 transition-colors duration-150 {% if request.resolver_match.url_name == 'coordinator' %}bg-[#7a9176] text-white font-semibold shadow-inner{% else %}bg-[#6a8166] text-white/95 hover:bg-[#7a9176]{% endif %}">
+                    <span class="flex items-center gap-2.5">
+                        <span class="flex h-6 w-6 items-center justify-center rounded bg-[#4e634b]/60 text-[11px] font-bold border border-white/15">&#9635;</span>
+                        <span>Dashboard</span>
+                    </span>
+                </a>
+
+                <!-- Dropdown Group 1: Exam & Resource Mgmt -->
+                <div class="bg-[#647b60]">
+                    <button type="button"
+                            onclick="toggleNavGroup('grp-management', 'chev-management')"
+                            class="w-full flex items-center justify-between px-3.5 py-2.5 text-left text-white hover:bg-[#7a9176] transition-colors duration-150 {% if 'staff' in request.path or 'availability' in request.path or 'room' in request.path or 'session' in request.path or 'assignment' in request.path %}bg-[#7a9176] font-semibold{% endif %}">
+                        <span class="flex items-center gap-2.5">
+                            <span class="flex h-6 w-6 items-center justify-center rounded bg-[#4b5f48]/65 text-[11px] font-bold border border-white/15">&#9776;</span>
+                            <span>Exam &amp; Resource Mgmt</span>
+                        </span>
+                        <svg id="chev-management"
+                             class="nav-chevron h-4 w-4 text-white/90 {% if 'staff' in request.path or 'availability' in request.path or 'room' in request.path or 'session' in request.path or 'assignment' in request.path %}is-open{% endif %}"
+                             viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+
+                    <div id="grp-management"
+                         class="nav-accordion-panel {% if 'staff' in request.path or 'availability' in request.path or 'room' in request.path or 'session' in request.path or 'assignment' in request.path %}is-open{% endif %}">
+                        <div class="nav-accordion-inner bg-[#52674e]">
+                            <div class="relative py-1.5 pl-6 pr-3 space-y-0.5">
+                                <span class="pointer-events-none absolute left-7 top-2.5 bottom-2.5 w-px bg-white/30"></span>
+
+                                <a href="{% url 'manage:staff_list' %}"
+                                   class="relative flex items-center gap-3 rounded py-2 pl-5 pr-2 text-xs transition-all duration-150 {% if 'staff' in request.path %}text-white font-semibold bg-[#435540]/70{% else %}text-white/90 hover:text-white hover:bg-[#4b5f48]/50{% endif %}">
+                                    <span class="h-2 w-2 rounded-full border border-white/75 {% if 'staff' in request.path %}bg-white{% else %}bg-transparent{% endif %}"></span>
+                                    <span>Invigilators &amp; Staff</span>
+                                </a>
+
+                                <a href="{% url 'manage:availability_list' %}"
+                                   class="relative flex items-center gap-3 rounded py-2 pl-5 pr-2 text-xs transition-all duration-150 {% if 'availability' in request.path %}text-white font-semibold bg-[#435540]/70{% else %}text-white/90 hover:text-white hover:bg-[#4b5f48]/50{% endif %}">
+                                    <span class="h-2 w-2 rounded-full border border-white/75 {% if 'availability' in request.path %}bg-white{% else %}bg-transparent{% endif %}"></span>
+                                    <span>Staff Availability</span>
+                                </a>
+
+                                <a href="{% url 'manage:room_list' %}"
+                                   class="relative flex items-center gap-3 rounded py-2 pl-5 pr-2 text-xs transition-all duration-150 {% if 'room' in request.path %}text-white font-semibold bg-[#435540]/70{% else %}text-white/90 hover:text-white hover:bg-[#4b5f48]/50{% endif %}">
+                                    <span class="h-2 w-2 rounded-full border border-white/75 {% if 'room' in request.path %}bg-white{% else %}bg-transparent{% endif %}"></span>
+                                    <span>Exam Rooms</span>
+                                </a>
+
+                                <a href="{% url 'manage:session_list' %}"
+                                   class="relative flex items-center gap-3 rounded py-2 pl-5 pr-2 text-xs transition-all duration-150 {% if 'session' in request.path %}text-white font-semibold bg-[#435540]/70{% else %}text-white/90 hover:text-white hover:bg-[#4b5f48]/50{% endif %}">
+                                    <span class="h-2 w-2 rounded-full border border-white/75 {% if 'session' in request.path %}bg-white{% else %}bg-transparent{% endif %}"></span>
+                                    <span>Exam Sessions</span>
+                                </a>
+
+                                <a href="{% url 'manage:assignment_list' %}"
+                                   class="relative flex items-center gap-3 rounded py-2 pl-5 pr-2 text-xs transition-all duration-150 {% if 'assignment' in request.path %}text-white font-semibold bg-[#435540]/70{% else %}text-white/90 hover:text-white hover:bg-[#4b5f48]/50{% endif %}">
+                                    <span class="h-2 w-2 rounded-full border border-white/75 {% if 'assignment' in request.path %}bg-white{% else %}bg-transparent{% endif %}"></span>
+                                    <span>Duty Assignments</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dropdown Group 2: Reports & Exports -->
+                <div class="bg-[#647b60]">
+                    <button type="button"
+                            onclick="toggleNavGroup('grp-reports', 'chev-reports')"
+                            class="w-full flex items-center justify-between px-3.5 py-2.5 text-left text-white hover:bg-[#7a9176] transition-colors duration-150">
+                        <span class="flex items-center gap-2.5">
+                            <span class="flex h-6 w-6 items-center justify-center rounded bg-[#4b5f48]/65 text-[11px] font-bold border border-white/15">&#128196;</span>
+                            <span>Reports &amp; Exports</span>
+                        </span>
+                        <svg id="chev-reports" class="nav-chevron h-4 w-4 text-white/90" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+
+                    <div id="grp-reports" class="nav-accordion-panel">
+                        <div class="nav-accordion-inner bg-[#52674e]">
+                            <div class="relative py-1.5 pl-6 pr-3 space-y-0.5">
+                                <span class="pointer-events-none absolute left-7 top-2.5 bottom-2.5 w-px bg-white/30"></span>
+                                <a href="{% url 'export_roster_csv' %}"
+                                   class="relative flex items-center gap-3 rounded py-2 pl-5 pr-2 text-xs text-white/90 hover:text-white hover:bg-[#4b5f48]/50 transition-all duration-150">
+                                    <span class="h-2 w-2 rounded-full border border-white/75 bg-transparent"></span>
+                                    <span>Download CSV Roster</span>
+                                </a>
+                                <a href="{% url 'print_roster' %}" target="_blank"
+                                   class="relative flex items-center gap-3 rounded py-2 pl-5 pr-2 text-xs text-white/90 hover:text-white hover:bg-[#4b5f48]/50 transition-all duration-150">
+                                    <span class="h-2 w-2 rounded-full border border-white/75 bg-transparent"></span>
+                                    <span>Printable Roster Sheet</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            {% else %}
+                <!-- Staff / Faculty Portal -->
+                <a href="{% url 'dashboard' %}"
+                   class="flex items-center justify-between px-3.5 py-2.5 transition-colors duration-150 {% if request.resolver_match.url_name == 'dashboard' %}bg-[#7a9176] text-white font-semibold{% else %}bg-[#6a8166] text-white/95 hover:bg-[#7a9176]{% endif %}">
+                    <span class="flex items-center gap-2.5">
+                        <span class="flex h-6 w-6 items-center justify-center rounded bg-[#4e634b]/60 text-[11px] font-bold border border-white/15">&#9635;</span>
+                        <span>My Exam Duties</span>
+                    </span>
+                </a>
+
+                <div class="bg-[#647b60]">
+                    <button type="button"
+                            onclick="toggleNavGroup('grp-staff-exports', 'chev-staff-exports')"
+                            class="w-full flex items-center justify-between px-3.5 py-2.5 text-left text-white hover:bg-[#7a9176] transition-colors duration-150">
+                        <span class="flex items-center gap-2.5">
+                            <span class="flex h-6 w-6 items-center justify-center rounded bg-[#4b5f48]/65 text-[11px] font-bold border border-white/15">&#128196;</span>
+                            <span>Duty Sheets &amp; Exports</span>
+                        </span>
+                        <svg id="chev-staff-exports" class="nav-chevron h-4 w-4 text-white/90" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+
+                    <div id="grp-staff-exports" class="nav-accordion-panel">
+                        <div class="nav-accordion-inner bg-[#52674e]">
+                            <div class="relative py-1.5 pl-6 pr-3 space-y-0.5">
+                                <span class="pointer-events-none absolute left-7 top-2.5 bottom-2.5 w-px bg-white/30"></span>
+                                <a href="{% url 'export_roster_csv' %}"
+                                   class="relative flex items-center gap-3 rounded py-2 pl-5 pr-2 text-xs text-white/90 hover:text-white hover:bg-[#4b5f48]/50 transition-all duration-150">
+                                    <span class="h-2 w-2 rounded-full border border-white/75 bg-transparent"></span>
+                                    <span>Export CSV Schedule</span>
+                                </a>
+                                <a href="{% url 'print_roster' %}" target="_blank"
+                                   class="relative flex items-center gap-3 rounded py-2 pl-5 pr-2 text-xs text-white/90 hover:text-white hover:bg-[#4b5f48]/50 transition-all duration-150">
+                                    <span class="h-2 w-2 rounded-full border border-white/75 bg-transparent"></span>
+                                    <span>Print Duty Sheet</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </nav>
+
+        <!-- Socket Status Footer -->
+        <div class="p-3 border-t border-[#4b5f48] bg-[#4a5e47]">
+            <div class="flex items-center gap-2 px-2.5 py-1.5 rounded bg-[#3d4f3a] border border-[#5e745b] text-[11px]">
+                <span id="ws-status-dot" class="h-2 w-2 rounded-full bg-amber-300 animate-ping"></span>
+                <span id="ws-status-text" class="text-white/90 font-medium">Connecting Socket...</span>
             </div>
         </div>
-    </nav>
+    </aside>
 
-    <main class="container my-4">
-        {% block content %}{% endblock %}
+    <!-- Main Content Shell -->
+    <div class="flex-1 lg:pl-64 flex flex-col min-h-screen">
+        <!-- Top Portal Header Bar (Desktop + Mobile) -->
+        <header class="no-print sticky top-0 z-30 flex items-center justify-between bg-[#7a9176] text-white h-12 shadow-2xs border-b border-[#5b7158]">
+            <div class="flex items-center gap-2.5 px-4 min-w-0">
+                <button type="button" onclick="toggleMobileSidebar(true)"
+                        class="lg:hidden rounded border border-white/30 bg-white/15 px-2.5 py-1 text-xs font-bold text-white hover:bg-white/25 active:scale-95 transition">
+                    &#9776;
+                </button>
+                <span class="truncate text-sm sm:text-base font-medium tracking-tight">Bahria University Karachi Campus</span>
+            </div>
+
+            <!-- Right User Name & Dropdown Trigger -->
+            <div class="relative h-full">
+                <button type="button"
+                        id="user-menu-btn"
+                        onclick="toggleUserDropdown(event)"
+                        class="flex h-full items-center gap-2.5 bg-[#5a6f56] hover:bg-[#4e624a] px-4 text-xs font-semibold text-white border-l border-[#5b7158] transition-colors">
+                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-[#52674e] text-[11px] font-extrabold shadow-2xs">
+                        {{ user.get_full_name|default:user.username|slice:":1"|upper }}
+                    </span>
+                    <span class="max-w-[160px] sm:max-w-[220px] truncate uppercase tracking-wide">
+                        {{ user.get_full_name|default:user.username }}
+                    </span>
+                    <svg id="user-menu-caret" class="h-3.5 w-3.5 text-white/90 transition-transform duration-150" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+
+                <!-- Profile & Sign Out Popover Card -->
+                <div id="user-dropdown-menu"
+                     class="animate-dropdown-in hidden absolute right-0 top-full z-50 w-64 bg-[#7a9176] text-white border border-[#52674e] shadow-xl">
+                    <!-- Avatar & Identity Block -->
+                    <div class="flex flex-col items-center px-4 py-5 text-center border-b border-[#63795f]">
+                        <div class="flex h-16 w-16 items-center justify-center rounded-full bg-white text-[#52674e] text-xl font-extrabold shadow-md border-2 border-[#e2ebe0]">
+                            {{ user.get_full_name|default:user.username|slice:":1"|upper }}
+                        </div>
+                        <p class="mt-3 text-sm font-bold uppercase tracking-wide text-white">
+                            {{ user.get_full_name|default:user.username }}
+                        </p>
+                        <p class="mt-0.5 text-[11px] text-white/85 break-all">
+                            {{ user.email|default:user.username }}
+                        </p>
+                        <span class="mt-2 rounded bg-[#52674e]/80 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/95">
+                            {{ user.role|default:"Staff" }}
+                        </span>
+                    </div>
+
+                    <!-- Menu Actions -->
+                    <div class="divide-y divide-[#63795f] text-xs font-semibold">
+                        <a href="#profile"
+                           onclick="event.preventDefault(); toggleUserDropdown(event);"
+                           class="flex items-center gap-3 px-4 py-3 text-white hover:bg-[#667d62] transition-colors">
+                            <span class="flex h-6 w-6 items-center justify-center rounded bg-[#5a6f56] text-white/90">&#128100;</span>
+                            <span>Profile</span>
+                        </a>
+
+                        <a href="{% url 'logout' %}"
+                           class="flex items-center gap-3 px-4 py-3 text-white hover:bg-[#667d62] transition-colors">
+                            <span class="flex h-6 w-6 items-center justify-center rounded bg-[#5a6f56] text-white/90">&#8682;</span>
+                            <span>Sign Out</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 w-full bg-white/95 px-4 sm:px-6 py-5 animate-page-in">
+            <div class="mx-auto max-w-7xl">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+
+        <!-- Bottom Portal Footer -->
+        <footer class="no-print border-t border-slate-200 bg-[#f5f7f4] px-4 sm:px-6 py-2.5 text-xs text-slate-500 flex items-center justify-between">
+            <span>2026 &copy; <a href="#" class="font-semibold text-[#52674e] hover:underline">Bahria University</a></span>
+            <span>ExamDuty Pro</span>
+        </footer>
+    </div>
+{% else %}
+    <main class="flex-1 w-full animate-page-in">
+        {% block unauth_content %}{% endblock %}
     </main>
+{% endif %}
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'js/notifications.js' %}"></script>
+<!-- Real-Time WebSocket Toast Container -->
+<div id="ws-toast-container" class="no-print fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none"></div>
+
+{% if user.is_authenticated %}
+<script>
+function toggleUserDropdown(event) {
+    if (event) event.stopPropagation();
+    const menu = document.getElementById('user-dropdown-menu');
+    const caret = document.getElementById('user-menu-caret');
+    if (!menu) return;
+    menu.classList.toggle('hidden');
+    if (caret) caret.classList.toggle('rotate-180');
+}
+
+document.addEventListener('click', function(event) {
+    const menu = document.getElementById('user-dropdown-menu');
+    const btn = document.getElementById('user-menu-btn');
+    const caret = document.getElementById('user-menu-caret');
+    if (!menu || menu.classList.contains('hidden')) return;
+    if (!menu.contains(event.target) && (!btn || !btn.contains(event.target))) {
+        menu.classList.add('hidden');
+        if (caret) caret.classList.remove('rotate-180');
+    }
+});
+
+function toggleNavGroup(panelId, chevronId) {
+    const panel = document.getElementById(panelId);
+    const chevron = document.getElementById(chevronId);
+    if (!panel) return;
+    panel.classList.toggle('is-open');
+    if (chevron) chevron.classList.toggle('is-open');
+}
+
+function toggleMobileSidebar(open) {
+    const sidebar = document.getElementById('app-sidebar');
+    const backdrop = document.getElementById('mobile-backdrop');
+    if (!sidebar || !backdrop) return;
+    if (open) {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+    } else {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+    }
+}
+
+(function() {
+    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    const wsUrl = protocol + window.location.host + '/ws/notifications/';
+
+    function showNotification(message) {
+        const banner = document.getElementById('ws-alert-banner');
+        const bannerText = document.getElementById('ws-alert-text');
+        if (banner && bannerText) {
+            bannerText.textContent = message;
+            banner.classList.remove('hidden');
+        }
+
+        const container = document.getElementById('ws-toast-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = 'animate-toast-in pointer-events-auto rounded-md border border-[#7a9176]/55 bg-white p-4 shadow-xl flex items-start gap-3';
+        toast.innerHTML = `
+            <span class="mt-1 flex h-2.5 w-2.5 shrink-0 rounded-full bg-[#5cb85c]"></span>
+            <div class="flex-1 text-sm">
+                <p class="font-bold text-slate-900">Real-Time Roster Alert</p>
+                <p class="mt-0.5 text-slate-600 text-xs leading-relaxed">${message}</p>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-700 text-sm font-bold">&times;</button>
+        `;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 9000);
+    }
+
+    function connect() {
+        const socket = new WebSocket(wsUrl);
+        socket.onopen = () => {
+            const dot = document.getElementById('ws-status-dot');
+            const txt = document.getElementById('ws-status-text');
+            if (dot) dot.className = 'h-2 w-2 rounded-full bg-[#5cb85c]';
+            if (txt) txt.textContent = 'Live Socket Active';
+        };
+        socket.onmessage = (e) => {
+            try {
+                const data = JSON.parse(e.data);
+                if (data.message) showNotification(data.message);
+            } catch {
+                showNotification(e.data);
+            }
+        };
+        socket.onclose = () => {
+            const dot = document.getElementById('ws-status-dot');
+            const txt = document.getElementById('ws-status-text');
+            if (dot) dot.className = 'h-2 w-2 rounded-full bg-amber-300 animate-ping';
+            if (txt) txt.textContent = 'Reconnecting...';
+            setTimeout(connect, 4000);
+        };
+    }
+    connect();
+})();
+</script>
+{% endif %}
 </body>
 </html>
