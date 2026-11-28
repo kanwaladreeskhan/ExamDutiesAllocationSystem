@@ -7,8 +7,8 @@ from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from accounts.decorators import coordinator_required
 from accounts.mixins import CoordinatorRequiredMixin
 
-from .forms import ExamSessionForm, RoomForm, SessionRoomFormSet
-from .models import ExamSession, Room
+from .forms import ExamSessionForm, RoomForm, SessionRoomFormSet, StaffForm
+from .models import ExamSession, Room, StaffProfile
 
 
 # ---------- Rooms ----------
@@ -80,3 +80,29 @@ def session_add(request):
 @coordinator_required
 def session_edit(request, pk):
     return _save_session(request, get_object_or_404(ExamSession, pk=pk))
+# ---------- Staff ----------
+
+class StaffList(CoordinatorRequiredMixin, ListView):
+    model = StaffProfile
+    template_name = "coordinator/staff_list.html"
+    queryset = StaffProfile.objects.select_related("user").order_by("user__first_name")
+
+
+class StaffCreate(CoordinatorRequiredMixin, CreateView):
+    model = StaffProfile
+    form_class = StaffForm
+    template_name = "coordinator/staff_form.html"
+    success_url = reverse_lazy("manage:staff_list")
+
+
+class StaffUpdate(CoordinatorRequiredMixin, UpdateView):
+    model = StaffProfile
+    form_class = StaffForm
+    template_name = "coordinator/staff_form.html"
+    success_url = reverse_lazy("manage:staff_list")
+
+
+class StaffDelete(CoordinatorRequiredMixin, DeleteView):
+    model = StaffProfile
+    template_name = "coordinator/staff_confirm_delete.html"
+    success_url = reverse_lazy("manage:staff_list")

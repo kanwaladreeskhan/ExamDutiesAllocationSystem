@@ -12,4 +12,8 @@ urlpatterns = [
     path("sessions/add/", v.session_add, name="session_add"),
     path("sessions/<int:pk>/edit/", v.session_edit, name="session_edit"),
     path("sessions/<int:pk>/delete/", v.SessionDelete.as_view(), name="session_delete"),
+        path("staff/", v.StaffList.as_view(), name="staff_list"),
+    path("staff/add/", v.StaffCreate.as_view(), name="staff_add"),
+    path("staff/<int:pk>/edit/", v.StaffUpdate.as_view(), name="staff_edit"),
+    path("staff/<int:pk>/delete/", v.StaffDelete.as_view(), name="staff_delete"),
 ]

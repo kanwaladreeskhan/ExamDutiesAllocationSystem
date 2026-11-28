@@ -1,6 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory
-
+from accounts.models import User
+from .models import ExamSession, Room, SessionRoom, StaffProfile
 from .models import ExamSession, Room, SessionRoom
 
 
@@ -51,3 +52,59 @@ SessionRoomFormSet = inlineformset_factory(
         "required_invigilators": forms.NumberInput(attrs={"class": "form-control", "min": 1}),
     },
 )
+class StaffForm(forms.ModelForm):
+    """Creates/edits a staff User together with its StaffProfile."""
+    first_name = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
+    last_name = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
+    username = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
+    password = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput(attrs={"class": "form-control"}),
+        help_text="Leave blank to keep the current password.",
+    )
+
+    class Meta:
+        model = StaffProfile
+        fields = ["designation", "max_duties"]
+        widgets = {
+            "designation": forms.TextInput(attrs={"class": "form-control"}),
+            "max_duties": forms.NumberInput(attrs={"class": "form-control", "min": 0}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            u = self.instance.user
+            self.fields["first_name"].initial = u.first_name
+            self.fields["last_name"].initial = u.last_name
+            self.fields["username"].initial = u.username
+
+    def clean_username(self):
+        username = self.cleaned_data["username"]
+        qs = User.objects.filter(username=username)
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.user_id)
+        if qs.exists():
+            raise forms.ValidationError("This username is already taken.")
+        return username
+
+    def clean(self):
+        cleaned = super().clean()
+        if not self.instance.pk and not cleaned.get("password"):
+            self.add_error("password", "Password is required for a new staff member.")
+        return cleaned
+
+    def save(self, commit=True):
+        profile = super().save(commit=False)
+        data = self.cleaned_data
+        user = profile.user if self.instance.pk else User(role=User.Role.STAFF)
+        user.username = data["username"]
+        user.first_name = data["first_name"]
+        user.last_name = data["last_name"]
+        if data.get("password"):
+            user.set_password(data["password"])  # hashed
+        user.save()
+        profile.user = user
+        if commit:
+            profile.save()
+        return profile
