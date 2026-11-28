@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}ExamDuty Pro | Bahria University{% endblock %}</title>
+    <title>{% block title %}ExamDuty | Bahria University{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
         @media print { .no-print { display: none !important; } }
@@ -188,7 +188,7 @@
     <aside id="app-sidebar"
            class="no-print fixed inset-y-0 left-0 z-50 flex w-64 -translate-x-full flex-col bg-[#5d7359] text-white border-r border-[#4b5f48] transition-transform duration-300 ease-out lg:translate-x-0">
 
-<!-- Top Portal Header -->
+        <!-- Top Portal Header -->
         <div class="flex items-center justify-between px-4 h-14 bg-[#7a9176] text-white border-b border-[#5b7158] shadow-2xs">
             <div class="flex items-center gap-2.5 min-w-0">
                 <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#4b5f48]/70 font-bold text-xs tracking-wide border border-white/25">
@@ -378,51 +378,58 @@
                 <button type="button"
                         id="user-menu-btn"
                         onclick="toggleUserDropdown(event)"
-                        class="flex h-full items-center gap-2.5 bg-[#5a6f56] hover:bg-[#4e624a] px-4 text-xs font-semibold text-white border-l border-[#5b7158] transition-colors">
+                        class="flex h-full items-center gap-2.5 bg-[#4c4e4b] hover:bg-[#3d3f3c] px-4 text-xs font-semibold text-white border-l border-[#3a3c39] transition-colors cursor-pointer">
                     <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-[#52674e] text-[11px] font-extrabold shadow-2xs">
-                        {{ user.get_full_name|default:user.username|slice:":1"|upper }}
+                        {{ user.get_full_name|default:user.username|slice:":2"|upper }}
                     </span>
-                    <span class="max-w-[160px] sm:max-w-[220px] truncate uppercase tracking-wide">
-                        {{ user.get_full_name|default:user.username }}
+                    <span class="max-w-[160px] sm:max-w-[220px] truncate tracking-wide">
+                        {{ user.username }}
                     </span>
                     <svg id="user-menu-caret" class="h-3.5 w-3.5 text-white/90 transition-transform duration-150" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                     </svg>
                 </button>
 
-                <!-- Profile & Sign Out Popover Card -->
+                <!-- Profile, Sign Out & Change Password Popover Card -->
                 <div id="user-dropdown-menu"
-                     class="animate-dropdown-in hidden absolute right-0 top-full z-50 w-64 bg-[#7a9176] text-white border border-[#52674e] shadow-xl">
+                     class="animate-dropdown-in hidden absolute right-0 top-full z-50 w-72 bg-[#6d7f68] text-white border border-[#52674e] shadow-2xl">
                     <!-- Avatar & Identity Block -->
-                    <div class="flex flex-col items-center px-4 py-5 text-center border-b border-[#63795f]">
-                        <div class="flex h-16 w-16 items-center justify-center rounded-full bg-white text-[#52674e] text-xl font-extrabold shadow-md border-2 border-[#e2ebe0]">
-                            {{ user.get_full_name|default:user.username|slice:":1"|upper }}
+                    <div class="flex flex-col items-center px-5 py-5 text-center border-b border-white/15">
+                        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-white text-[#52674e] text-2xl font-extrabold shadow-md border-2 border-[#e2ebe0]">
+                            {{ user.get_full_name|default:user.username|slice:":2"|upper }}
                         </div>
-                        <p class="mt-3 text-sm font-bold uppercase tracking-wide text-white">
+                        <p class="mt-3 text-sm font-extrabold uppercase tracking-wide text-white">
                             {{ user.get_full_name|default:user.username }}
                         </p>
-                        <p class="mt-0.5 text-[11px] text-white/85 break-all">
+                        <p class="mt-0.5 text-xs text-white/85 break-all">
                             {{ user.email|default:user.username }}
                         </p>
-                        <span class="mt-2 rounded bg-[#52674e]/80 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/95">
-                            {{ user.role|default:"Staff" }}
-                        </span>
                     </div>
 
                     <!-- Menu Actions -->
-                    <div class="divide-y divide-[#63795f] text-xs font-semibold">
-                        <a href="#profile"
-                           onclick="event.preventDefault(); toggleUserDropdown(event);"
-                           class="flex items-center gap-3 px-4 py-3 text-white hover:bg-[#667d62] transition-colors">
-                            <span class="flex h-6 w-6 items-center justify-center rounded bg-[#5a6f56] text-white/90">&#128100;</span>
+                    <div class="divide-y divide-white/10 text-sm font-semibold">
+                        <a href="{% if user.role == 'COORDINATOR' %}{% url 'coordinator' %}{% else %}{% url 'dashboard' %}{% endif %}"
+                           class="flex items-center gap-3 px-5 py-3.5 text-white hover:bg-[#5e7059] transition-colors">
+                            <span class="flex h-7 w-7 items-center justify-center rounded bg-white/25 text-white text-xs">&#128100;</span>
                             <span>Profile</span>
                         </a>
 
-                        <a href="{% url 'logout' %}"
-                           class="flex items-center gap-3 px-4 py-3 text-white hover:bg-[#667d62] transition-colors">
-                            <span class="flex h-6 w-6 items-center justify-center rounded bg-[#5a6f56] text-white/90">&#8682;</span>
-                            <span>Sign Out</span>
+                        <form method="POST" action="{% url 'logout' %}" class="m-0 bg-[#4b3837] hover:bg-[#3e2e2d] border-l-4 border-[#e74c3c] transition-colors">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="w-full flex items-center gap-3 px-4 py-3.5 text-left text-white font-semibold cursor-pointer">
+                                <span class="flex h-7 w-7 items-center justify-center rounded bg-[#e74c3c] text-white text-xs">&#10162;</span>
+                                <span>Sign Out</span>
+                            </button>
+                        </form>
+
+                        {% if user.has_usable_password %}
+                        <a href="{% url 'password_change' %}"
+                           class="flex items-center gap-3 px-5 py-3.5 text-white hover:bg-[#5e7059] transition-colors">
+                            <span class="flex h-7 w-7 items-center justify-center rounded bg-white/25 text-white text-xs">&#128273;</span>
+                            <span>Change Password</span>
                         </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -437,7 +444,7 @@
         <!-- Bottom Portal Footer -->
         <footer class="no-print border-t border-slate-200 bg-[#f5f7f4] px-4 sm:px-6 py-2.5 text-xs text-slate-500 flex items-center justify-between">
             <span>2026 &copy; <a href="#" class="font-semibold text-[#52674e] hover:underline">Bahria University</a></span>
-            <span>ExamDuty Pro</span>
+            <span>ExamDuty</span>
         </footer>
     </div>
 {% else %}
@@ -495,6 +502,7 @@ function toggleMobileSidebar(open) {
 (function() {
     const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
     const wsUrl = protocol + window.location.host + '/ws/notifications/';
+    let reconnectTimer = null;
 
     function showNotification(message) {
         const banner = document.getElementById('ws-alert-banner');
@@ -506,21 +514,45 @@ function toggleMobileSidebar(open) {
 
         const container = document.getElementById('ws-toast-container');
         if (!container) return;
+
         const toast = document.createElement('div');
         toast.className = 'animate-toast-in pointer-events-auto rounded-md border border-[#7a9176]/55 bg-white p-4 shadow-xl flex items-start gap-3';
-        toast.innerHTML = `
-            <span class="mt-1 flex h-2.5 w-2.5 shrink-0 rounded-full bg-[#5cb85c]"></span>
-            <div class="flex-1 text-sm">
-                <p class="font-bold text-slate-900">Real-Time Roster Alert</p>
-                <p class="mt-0.5 text-slate-600 text-xs leading-relaxed">${message}</p>
-            </div>
-            <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-700 text-sm font-bold">&times;</button>
-        `;
+
+        const dot = document.createElement('span');
+        dot.className = 'mt-1 flex h-2.5 w-2.5 shrink-0 rounded-full bg-[#5cb85c]';
+
+        const body = document.createElement('div');
+        body.className = 'flex-1 text-sm';
+
+        const title = document.createElement('p');
+        title.className = 'font-bold text-slate-900';
+        title.textContent = 'Real-Time Roster Alert';
+
+        const text = document.createElement('p');
+        text.className = 'mt-0.5 text-slate-600 text-xs leading-relaxed';
+        text.textContent = message;
+
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'text-slate-400 hover:text-slate-700 text-sm font-bold cursor-pointer';
+        closeBtn.textContent = '\u00D7';
+        closeBtn.addEventListener('click', () => toast.remove());
+
+        body.appendChild(title);
+        body.appendChild(text);
+        toast.appendChild(dot);
+        toast.appendChild(body);
+        toast.appendChild(closeBtn);
         container.appendChild(toast);
+
         setTimeout(() => toast.remove(), 9000);
     }
 
     function connect() {
+        if (reconnectTimer) {
+            clearTimeout(reconnectTimer);
+            reconnectTimer = null;
+        }
         const socket = new WebSocket(wsUrl);
         socket.onopen = () => {
             const dot = document.getElementById('ws-status-dot');
@@ -541,7 +573,7 @@ function toggleMobileSidebar(open) {
             const txt = document.getElementById('ws-status-text');
             if (dot) dot.className = 'h-2 w-2 rounded-full bg-amber-300 animate-ping';
             if (txt) txt.textContent = 'Reconnecting...';
-            setTimeout(connect, 4000);
+            reconnectTimer = setTimeout(connect, 4000);
         };
     }
     connect();
