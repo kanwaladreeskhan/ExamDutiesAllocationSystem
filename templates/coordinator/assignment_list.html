@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h3 class="mb-3">Assignments</h3>
+  {% for m in messages %}<div class="alert alert-success">{{ m }}</div>{% endfor %}
+  <table class="table table-striped bg-white">
+    <thead><tr><th>Roster</th><th>Session</th><th>Room</th><th>Staff</th><th></th></tr></thead>
+    <tbody>
+    {% for a in object_list %}
+      <tr>
+        <td>{{ a.roster }}</td>
+        <td>{{ a.session_room.session }}</td>
+        <td>{{ a.session_room.room.name }}</td>
+        <td>{{ a.staff }}</td>
+        <td><a href="{% url 'manage:assignment_replace' a.pk %}" class="btn btn-sm btn-outline-primary">Replace</a></td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5">No assignments yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

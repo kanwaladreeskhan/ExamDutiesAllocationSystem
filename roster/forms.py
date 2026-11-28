@@ -4,6 +4,7 @@ from django.forms import inlineformset_factory
 from accounts.models import User
 
 from .models import Availability, ExamSession, Room, SessionRoom, StaffProfile
+from .services.adapters import check_replacement
 
 
 class RoomForm(forms.ModelForm):
@@ -135,3 +136,27 @@ class AvailabilityForm(forms.ModelForm):
         if start and end and end <= start:
             raise forms.ValidationError("End time must be after start time.")
         return cleaned
+
+
+class ReplacementForm(forms.Form):
+    staff = forms.ModelChoiceField(
+        queryset=StaffProfile.objects.all(),
+        label="Replacement staff member",
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )
+
+    def __init__(self, *args, assignment, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.assignment = assignment
+        self.fields["staff"].queryset = (
+            StaffProfile.objects.select_related("user")
+            .exclude(pk=assignment.staff_id)
+            .order_by("user__first_name")
+        )
+
+    def clean_staff(self):
+        staff = self.cleaned_data["staff"]
+        issues = check_replacement(self.assignment, staff)
+        if issues:
+            raise forms.ValidationError(list(issues))
+        return staff

@@ -78,3 +78,9 @@
     </div>
 </div>
 {% endblock %}
+<div class="mb-4">
+  <a href="{% url 'manage:staff_list' %}" class="btn btn-outline-primary me-2">Staff</a>
+  <a href="{% url 'manage:availability_list' %}" class="btn btn-outline-primary me-2">Availability</a>
+  <a href="{% url 'manage:room_list' %}" class="btn btn-outline-primary me-2">Rooms</a>
+  <a href="{% url 'manage:session_list' %}" class="btn btn-outline-primary">Exam Sessions</a>
+</div>

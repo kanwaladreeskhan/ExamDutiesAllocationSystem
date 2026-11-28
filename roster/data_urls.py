@@ -20,4 +20,6 @@ urlpatterns = [
     path("availability/add/", v.AvailabilityCreate.as_view(), name="availability_add"),
     path("availability/<int:pk>/edit/", v.AvailabilityUpdate.as_view(), name="availability_edit"),
     path("availability/<int:pk>/delete/", v.AvailabilityDelete.as_view(), name="availability_delete"),
+           path("assignments/", v.AssignmentList.as_view(), name="assignment_list"),
+    path("assignments/<int:pk>/replace/", v.assignment_replace, name="assignment_replace"),
 ]

@@ -10,11 +10,12 @@ from accounts.mixins import CoordinatorRequiredMixin
 from .forms import (
     AvailabilityForm,
     ExamSessionForm,
+    ReplacementForm,
     RoomForm,
     SessionRoomFormSet,
     StaffForm,
 )
-from .models import Availability, ExamSession, Room, StaffProfile
+from .models import Assignment, Availability, ExamSession, Room, StaffProfile
 
 
 # ---------- Rooms ----------
@@ -144,3 +145,39 @@ class AvailabilityDelete(CoordinatorRequiredMixin, DeleteView):
     model = Availability
     template_name = "coordinator/availability_confirm_delete.html"
     success_url = reverse_lazy("manage:availability_list")
+
+
+# ---------- Replacement (FR-09) ----------
+
+class AssignmentList(CoordinatorRequiredMixin, ListView):
+    model = Assignment
+    template_name = "coordinator/assignment_list.html"
+    queryset = Assignment.objects.select_related(
+        "roster", "staff__user", "session_room__session", "session_room__room"
+    ).order_by(
+        "roster_id", "session_room__session__date", "session_room__session__start_time"
+    )
+
+
+@coordinator_required
+def assignment_replace(request, pk):
+    assignment = get_object_or_404(
+        Assignment.objects.select_related(
+            "staff__user", "session_room__session", "session_room__room"
+        ),
+        pk=pk,
+    )
+    if request.method == "POST":
+        form = ReplacementForm(request.POST, assignment=assignment)
+        if form.is_valid():
+            assignment.staff = form.cleaned_data["staff"]
+            assignment.save()
+            messages.success(request, "Replacement saved.")
+            return redirect("manage:assignment_list")
+    else:
+        form = ReplacementForm(assignment=assignment)
+    return render(
+        request,
+        "coordinator/assignment_replace.html",
+        {"form": form, "assignment": assignment},
+    )

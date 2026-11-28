@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4" style="max-width:600px;">
+  <h3>Replace staff member</h3>
+  <p>
+    <strong>{{ assignment.session_room.session }}</strong><br>
+    Room {{ assignment.session_room.room.name }}<br>
+    Currently assigned: {{ assignment.staff }}
+  </p>
+  <form method="post">
+    {% csrf_token %}
+    {% if form.staff.errors %}
+      <div class="alert alert-danger">
+        <strong>This replacement breaks the rules:</strong>
+        <ul class="mb-0">{% for e in form.staff.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+      </div>
+    {% endif %}
+    <label class="form-label">{{ form.staff.label }}</label>
+    {{ form.staff }}
+    <div class="mt-3">
+      <button class="btn btn-primary">Replace</button>
+      <a href="{% url 'manage:assignment_list' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
