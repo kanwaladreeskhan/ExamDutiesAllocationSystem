@@ -41,21 +41,18 @@ SAMPLE_DUTIES = [
 def staff_dashboard(request):
     duties = SAMPLE_DUTIES.copy()
 
-    # Get filter values from URL
     room = request.GET.get("room")
     date_str = request.GET.get("date")
 
-    # Filter by Room
     if room:
         duties = [d for d in duties if room.lower() in d["room"].lower()]
 
-    # Filter by Date
     if date_str:
         try:
             filter_date = datetime.strptime(date_str, "%Y-%m-%d").date()
             duties = [d for d in duties if d["date"] == filter_date]
         except ValueError:
-            pass  # Invalid date ignore
+            pass
 
     return render(request, "staff/dashboard.html", {"duties": duties})
 
@@ -103,7 +100,6 @@ def save_draft(request):
 def publish_roster(request):
     channel_layer = get_channel_layer()
 
-    # Broadcast message to all connected staff clients
     async_to_sync(channel_layer.group_send)(
         "notifications",
         {
@@ -116,5 +112,30 @@ def publish_roster(request):
     return redirect("coordinator")
 
 
-# ==========================================
-#
+# FR-11: CSV Export functionality
+@login_required
+def export_roster_csv(request):
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="my_exam_duties.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(["Date", "Start Time", "End Time", "Room", "Course Code", "Role", "Status"])
+
+    for duty in SAMPLE_DUTIES:
+        writer.writerow([
+            duty["date"],
+            duty["start_time"],
+            duty["end_time"],
+            duty["room"],
+            duty["course_code"],
+            duty["role"],
+            duty["status"],
+        ])
+
+    return response
+
+
+# Logout and redirect to login page
+def logout_view(request):
+    logout(request)
+    return redirect("login")
