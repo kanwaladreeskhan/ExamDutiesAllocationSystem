@@ -16,4 +16,8 @@ urlpatterns = [
     path("staff/add/", v.StaffCreate.as_view(), name="staff_add"),
     path("staff/<int:pk>/edit/", v.StaffUpdate.as_view(), name="staff_edit"),
     path("staff/<int:pk>/delete/", v.StaffDelete.as_view(), name="staff_delete"),
+        path("availability/", v.AvailabilityList.as_view(), name="availability_list"),
+    path("availability/add/", v.AvailabilityCreate.as_view(), name="availability_add"),
+    path("availability/<int:pk>/edit/", v.AvailabilityUpdate.as_view(), name="availability_edit"),
+    path("availability/<int:pk>/delete/", v.AvailabilityDelete.as_view(), name="availability_delete"),
 ]

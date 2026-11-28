@@ -7,8 +7,14 @@ from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from accounts.decorators import coordinator_required
 from accounts.mixins import CoordinatorRequiredMixin
 
-from .forms import ExamSessionForm, RoomForm, SessionRoomFormSet, StaffForm
-from .models import ExamSession, Room, StaffProfile
+from .forms import (
+    AvailabilityForm,
+    ExamSessionForm,
+    RoomForm,
+    SessionRoomFormSet,
+    StaffForm,
+)
+from .models import Availability, ExamSession, Room, StaffProfile
 
 
 # ---------- Rooms ----------
@@ -80,6 +86,8 @@ def session_add(request):
 @coordinator_required
 def session_edit(request, pk):
     return _save_session(request, get_object_or_404(ExamSession, pk=pk))
+
+
 # ---------- Staff ----------
 
 class StaffList(CoordinatorRequiredMixin, ListView):
@@ -106,3 +114,33 @@ class StaffDelete(CoordinatorRequiredMixin, DeleteView):
     model = StaffProfile
     template_name = "coordinator/staff_confirm_delete.html"
     success_url = reverse_lazy("manage:staff_list")
+
+
+# ---------- Availability ----------
+
+class AvailabilityList(CoordinatorRequiredMixin, ListView):
+    model = Availability
+    template_name = "coordinator/availability_list.html"
+    queryset = Availability.objects.select_related("staff__user").order_by(
+        "date", "staff__user__first_name"
+    )
+
+
+class AvailabilityCreate(CoordinatorRequiredMixin, CreateView):
+    model = Availability
+    form_class = AvailabilityForm
+    template_name = "coordinator/availability_form.html"
+    success_url = reverse_lazy("manage:availability_list")
+
+
+class AvailabilityUpdate(CoordinatorRequiredMixin, UpdateView):
+    model = Availability
+    form_class = AvailabilityForm
+    template_name = "coordinator/availability_form.html"
+    success_url = reverse_lazy("manage:availability_list")
+
+
+class AvailabilityDelete(CoordinatorRequiredMixin, DeleteView):
+    model = Availability
+    template_name = "coordinator/availability_confirm_delete.html"
+    success_url = reverse_lazy("manage:availability_list")

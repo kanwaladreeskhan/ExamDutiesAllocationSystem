@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between mb-3">
+    <h3>Staff Availability</h3>
+    <a href="{% url 'manage:availability_add' %}" class="btn btn-primary">Add Entry</a>
+  </div>
+  <table class="table table-striped bg-white">
+    <thead><tr><th>Staff</th><th>Date</th><th>Time</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+    {% for a in object_list %}
+      <tr>
+        <td>{{ a.staff }}</td>
+        <td>{{ a.date }}</td>
+        <td>{% if a.start_time %}{{ a.start_time|time:"H:i" }} - {{ a.end_time|time:"H:i" }}{% else %}Whole day{% endif %}</td>
+        <td>{% if a.is_available %}<span class="badge bg-success">Available</span>{% else %}<span class="badge bg-danger">Unavailable</span>{% endif %}</td>
+        <td>
+          <a href="{% url 'manage:availability_edit' a.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+          <a href="{% url 'manage:availability_delete' a.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5">No entries yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

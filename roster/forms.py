@@ -1,8 +1,9 @@
 from django import forms
 from django.forms import inlineformset_factory
+
 from accounts.models import User
-from .models import ExamSession, Room, SessionRoom, StaffProfile
-from .models import ExamSession, Room, SessionRoom
+
+from .models import Availability, ExamSession, Room, SessionRoom, StaffProfile
 
 
 class RoomForm(forms.ModelForm):
@@ -52,6 +53,8 @@ SessionRoomFormSet = inlineformset_factory(
         "required_invigilators": forms.NumberInput(attrs={"class": "form-control", "min": 1}),
     },
 )
+
+
 class StaffForm(forms.ModelForm):
     """Creates/edits a staff User together with its StaffProfile."""
     first_name = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
@@ -108,3 +111,27 @@ class StaffForm(forms.ModelForm):
         if commit:
             profile.save()
         return profile
+
+
+class AvailabilityForm(forms.ModelForm):
+    class Meta:
+        model = Availability
+        fields = ["staff", "date", "start_time", "end_time", "is_available"]
+        widgets = {
+            "staff": forms.Select(attrs={"class": "form-select"}),
+            "date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+            "start_time": forms.TimeInput(attrs={"class": "form-control", "type": "time"}),
+            "end_time": forms.TimeInput(attrs={"class": "form-control", "type": "time"}),
+            "is_available": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+
+    def clean(self):
+        cleaned = super().clean()
+        start, end = cleaned.get("start_time"), cleaned.get("end_time")
+        if bool(start) != bool(end):
+            raise forms.ValidationError(
+                "Give both start and end time, or leave both empty for the whole day."
+            )
+        if start and end and end <= start:
+            raise forms.ValidationError("End time must be after start time.")
+        return cleaned
